@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
   const admin = await requireAdmin()
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const ext = file.name.split('.').pop()
     const fileName = `${Date.now()}-${crypto.randomUUID()}.${ext}`
 
-    const supabase = await createClient()
+    const supabase = createServiceClient()
     const { error } = await supabase.storage
       .from('structua-images')
       .upload(fileName, file, { contentType: file.type, upsert: false })
