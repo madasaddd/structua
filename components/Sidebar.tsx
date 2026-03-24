@@ -169,7 +169,9 @@ export default function Sidebar({ weeks, isOpen = false, onClose }: SidebarProps
       {/* Give Feedback Area */}
       <div className="border-t border-gray-100 p-4 shrink-0">
         <a
-          href="#"
+          href="https://forms.gle/3JwFx1221e9NZVPm7"
+          target="_blank"
+          rel="noopener noreferrer"
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
         >
           <svg className="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -178,6 +180,7 @@ export default function Sidebar({ weeks, isOpen = false, onClose }: SidebarProps
           Give Feedback
         </a>
       </div>
+
     </>
   )
 
