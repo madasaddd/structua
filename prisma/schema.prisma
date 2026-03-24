@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         Role      @default(student)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  sessions     Session[]
+
+  @@map("users")
+}
+
+model Week {
+  id          Int    @id @default(autoincrement())
+  order       Int    @unique @map("week_order")
+  themeTitle  String @map("theme_title")
+  description String @default("")
+  days        Day[]
+
+  @@map("weeks")
+}
+
+model Day {
+  id          Int      @id @default(autoincrement())
+  weekId      Int      @map("week_id")
+  order       Int      @map("day_order")
+  lessonTitle String   @map("lesson_title")
+  isPublished Boolean  @default(false) @map("is_published")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  week        Week     @relation(fields: [weekId], references: [id])
+  blocks      Block[]
+
+  @@unique([weekId, order])
+  @@map("days")
+}
+
+model Block {
+  id          String   @id @default(uuid())
+  dayId       Int      @map("day_id")
+  type        BlockType
+  orderIndex  Int      @map("order_index")
+  contentData Json     @map("content_data")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  day         Day      @relation(fields: [dayId], references: [id])
+
+  @@map("blocks")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("sessions")
+}
+
+enum Role {
+  admin
+  student
+}
+
+enum BlockType {
+  text
+  callout
+  table
+  divider
+  image
+}
