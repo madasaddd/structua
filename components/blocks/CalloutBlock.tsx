@@ -14,13 +14,13 @@ export default function CalloutBlock({ data }: { data: CalloutBlockContent }) {
   const themeClass = colorMap[color] || colorMap.gray
 
   return (
-    <div className={`my-8 flex gap-5 rounded-xl border-l-4 p-5 shadow-sm transition-all hover:shadow-md ${themeClass}`}>
+    <div className={`my-8 flex gap-5 rounded-lg p-5 shadow-sm transition-all hover:shadow-md ${themeClass}`}>
       <div className="shrink-0 text-2xl select-none leading-none pt-1" aria-hidden="true">{emoji}</div>
       <div className="flex-1 min-w-0">
         {title && <h4 className="font-bold text-lg mb-1.5 tracking-tight">{title}</h4>}
         <div 
           className="text-[15px] leading-relaxed opacity-95 prose-sm prose-slate" 
-          dangerouslySetInnerHTML={{ __html: content }} 
+          dangerouslySetInnerHTML={{ __html: content || '' }} 
         />
       </div>
     </div>
