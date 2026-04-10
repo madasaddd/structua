@@ -22,7 +22,7 @@ interface BlockEditorWrapperProps {
 
 export default function BlockEditorWrapper({ block, dayId }: BlockEditorWrapperProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id })
-  const { updateBlock, removeBlock, setSyncStatus } = useBlockEditorStore()
+  const { updateBlock, removeBlock } = useBlockEditorStore()
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -30,24 +30,12 @@ export default function BlockEditorWrapper({ block, dayId }: BlockEditorWrapperP
     opacity: isDragging ? 0.5 : 1,
   }
 
-  const handleContentChange = useCallback(async (contentData: object) => {
+  const handleContentChange = useCallback((contentData: object) => {
     updateBlock(block.id, contentData)
-    setSyncStatus('saving')
-    try {
-      await fetch(`/api/blocks/${block.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contentData, type: block.type }),
-      })
-      setSyncStatus('idle')
-    } catch {
-      setSyncStatus('error')
-    }
-  }, [block.id, block.type, updateBlock, setSyncStatus])
+  }, [block.id, updateBlock])
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     removeBlock(block.id)
-    await fetch(`/api/blocks/${block.id}`, { method: 'DELETE' })
   }
 
   const renderEditor = () => {

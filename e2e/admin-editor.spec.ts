@@ -38,6 +38,8 @@ test.describe('Admin Block Editor', () => {
 
     // Wait for new block to appear (delete count increases)
     await expect(page.getByRole('button', { name: '🗑 Delete' })).toHaveCount(deletesBefore + 1, { timeout: 10000 })
+    await page.getByRole('button', { name: 'Save Changes' }).click()
+    await expect(page.getByRole('button', { name: 'Saved' })).toBeVisible()
   })
 
   test('should add a callout block', async ({ page }) => {
@@ -46,6 +48,8 @@ test.describe('Admin Block Editor', () => {
     await page.getByRole('button', { name: '💡 Callout' }).click()
 
     await expect(page.getByRole('button', { name: '🗑 Delete' })).toHaveCount(deletesBefore + 1, { timeout: 10000 })
+    await page.getByRole('button', { name: 'Save Changes' }).click()
+    await expect(page.getByRole('button', { name: 'Saved' })).toBeVisible()
   })
 
   test('should add a divider block', async ({ page }) => {
@@ -54,6 +58,8 @@ test.describe('Admin Block Editor', () => {
     await page.getByRole('button', { name: '— Divider' }).click()
 
     await expect(page.getByRole('button', { name: '🗑 Delete' })).toHaveCount(deletesBefore + 1, { timeout: 10000 })
+    await page.getByRole('button', { name: 'Save Changes' }).click()
+    await expect(page.getByRole('button', { name: 'Saved' })).toBeVisible()
   })
 
   test('should delete a block', async ({ page }) => {
@@ -66,6 +72,8 @@ test.describe('Admin Block Editor', () => {
 
     // Block count should decrease by 1
     await expect(page.getByRole('button', { name: '🗑 Delete' })).toHaveCount(deletesBefore - 1, { timeout: 10000 })
+    await page.getByRole('button', { name: 'Save Changes' }).click()
+    await expect(page.getByRole('button', { name: 'Saved' })).toBeVisible()
   })
 
   test('should toggle publish state', async ({ page }) => {

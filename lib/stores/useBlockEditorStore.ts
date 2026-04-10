@@ -4,26 +4,34 @@ import { arrayMove } from '@dnd-kit/sortable'
 
 interface BlockEditorState {
   blocks: Block[]
-  syncStatus: 'idle' | 'saving' | 'error'
-  _debounceTimer: ReturnType<typeof setTimeout> | null
+  syncStatus: 'idle' | 'saving' | 'error' | 'saved'
+  hasUnsavedChanges: boolean
 
   setBlocks: (blocks: Block[]) => void
-  addBlock: (block: Block) => void
+  addBlock: (block: Omit<Block, 'id'> & { id?: string }) => void
   updateBlock: (id: string, contentData: object, type?: string) => void
   removeBlock: (id: string) => void
   reorderBlocks: (activeId: string, overId: string) => void
-  setSyncStatus: (status: 'idle' | 'saving' | 'error') => void
+  setSyncStatus: (status: 'idle' | 'saving' | 'error' | 'saved') => void
+  markSaved: () => void
 }
 
 export const useBlockEditorStore = create<BlockEditorState>((set, get) => ({
   blocks: [],
   syncStatus: 'idle',
-  _debounceTimer: null,
+  hasUnsavedChanges: false,
 
-  setBlocks: (blocks) => set({ blocks }),
+  setBlocks: (blocks) => set({ blocks, hasUnsavedChanges: false }),
 
-  addBlock: (block) =>
-    set((state) => ({ blocks: [...state.blocks, block] })),
+  addBlock: (block) => {
+    // Generate a temporary ID for local drafting
+    const newBlock = { ...block, id: block.id || `temp-${Date.now()}` } as Block
+    set((state) => ({ 
+      blocks: [...state.blocks, newBlock],
+      hasUnsavedChanges: true,
+      syncStatus: 'idle' 
+    }))
+  },
 
   updateBlock: (id, contentData, type) =>
     set((state) => ({
@@ -32,10 +40,16 @@ export const useBlockEditorStore = create<BlockEditorState>((set, get) => ({
           ? { ...b, contentData: contentData as any, ...(type ? { type: type as any } : {}) }
           : b
       ),
+      hasUnsavedChanges: true,
+      syncStatus: 'idle'
     })),
 
   removeBlock: (id) =>
-    set((state) => ({ blocks: state.blocks.filter((b) => b.id !== id) })),
+    set((state) => ({ 
+      blocks: state.blocks.filter((b) => b.id !== id),
+      hasUnsavedChanges: true,
+      syncStatus: 'idle'
+    })),
 
   reorderBlocks: (activeId, overId) => {
     const { blocks } = get()
@@ -44,26 +58,14 @@ export const useBlockEditorStore = create<BlockEditorState>((set, get) => ({
     if (oldIndex === -1 || newIndex === -1) return
 
     const reordered = arrayMove(blocks, oldIndex, newIndex)
-    set({ blocks: reordered, syncStatus: 'saving' })
-
-    // Debounced persist: fire after 500ms of inactivity
-    const prev = get()._debounceTimer
-    if (prev) clearTimeout(prev)
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch('/api/blocks/reorder', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: get().blocks.map((b) => b.id) }),
-        })
-        if (!res.ok) throw new Error('Reorder failed')
-        set({ syncStatus: 'idle' })
-      } catch {
-        set({ blocks, syncStatus: 'error' })
-      }
-    }, 500)
-    set({ _debounceTimer: timer })
+    set({ 
+      blocks: reordered, 
+      hasUnsavedChanges: true,
+      syncStatus: 'idle'
+    })
   },
 
   setSyncStatus: (status) => set({ syncStatus: status }),
+  
+  markSaved: () => set({ hasUnsavedChanges: false, syncStatus: 'saved' }),
 }))

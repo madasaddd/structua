@@ -26,9 +26,8 @@ const ADD_BLOCK_TYPES: { type: BlockType; label: string; emoji: string }[] = [
 ]
 
 export default function DayEditorClient({ day }: { day: DayData }) {
-  const { blocks, setBlocks, addBlock, reorderBlocks, syncStatus } = useBlockEditorStore()
+  const { blocks, setBlocks, addBlock, reorderBlocks, syncStatus, setSyncStatus, hasUnsavedChanges, markSaved } = useBlockEditorStore()
   const [isPublished, setIsPublished] = useState(day.isPublished)
-  const [addingBlock, setAddingBlock] = useState(false)
 
   useEffect(() => {
     setBlocks(day.blocks)
@@ -46,19 +45,39 @@ export default function DayEditorClient({ day }: { day: DayData }) {
     }
   }
 
-  const handleAddBlock = async (type: BlockType) => {
-    setAddingBlock(true)
+  useEffect(() => {
+    if (!hasUnsavedChanges) return
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasUnsavedChanges])
+
+  const handleAddBlock = (type: BlockType) => {
+    addBlock({
+      dayId: day.id,
+      type,
+      orderIndex: blocks.length * 1000,
+      contentData: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any)
+  }
+
+  const handleSaveBlocks = async () => {
+    setSyncStatus('saving')
     try {
-      const res = await fetch('/api/blocks', {
-        method: 'POST',
+      const res = await fetch(`/api/days/${day.id}/blocks`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dayId: day.id, type }),
+        body: JSON.stringify({ blocks }),
       })
-      if (!res.ok) return
-      const block = await res.json()
-      addBlock(block)
-    } finally {
-      setAddingBlock(false)
+      if (!res.ok) throw new Error('Save failed')
+      markSaved()
+    } catch {
+      setSyncStatus('error')
     }
   }
 
@@ -83,7 +102,13 @@ export default function DayEditorClient({ day }: { day: DayData }) {
           <h1 className="text-xl font-bold text-gray-900 leading-tight">{day.lessonTitle}</h1>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          {syncStatus === 'saving' && <span className="text-xs text-gray-400 animate-pulse">Saving…</span>}
+          <button
+            onClick={handleSaveBlocks}
+            disabled={!hasUnsavedChanges || syncStatus === 'saving'}
+            className="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {syncStatus === 'saving' ? 'Saving...' : hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+          </button>
           {syncStatus === 'error' && <span className="text-xs text-red-500">Save failed</span>}
           <button
             onClick={handlePublishToggle}
@@ -125,8 +150,7 @@ export default function DayEditorClient({ day }: { day: DayData }) {
             <button
               key={type}
               onClick={() => handleAddBlock(type)}
-              disabled={addingBlock}
-              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
             >
               <span>{emoji}</span> {label}
             </button>
