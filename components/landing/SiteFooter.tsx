@@ -8,11 +8,11 @@ export default function SiteFooter() {
           <div className="flex flex-col items-center sm:items-start gap-2">
             <span className="text-xl font-bold tracking-tight text-[#303e51]">Structua</span>
             <p className="text-xs text-gray-500">
-              © 2024 Structua Academic Press. All intellectual property reserved.
+              © 2026 Structua team. CLaude sonnet 4.5, Gemini 3 Pro, and Antigravity.
             </p>
           </div>
           <div className="flex gap-6 text-sm font-medium text-gray-500">
-            <Link href="#" className="hover:text-[#303e51] transition-colors">Give feedback</Link>
+            <Link href="https://docs.google.com/forms/d/e/1FAIpQLSefrqXuGFKGYwGW1dAPIB-UUiFpHN0gB9s_0qLnfz9AbxN3EQ/viewform" target="_blank" rel="noopener noreferrer" className="hover:text-[#111827] transition-colors">Give feedback</Link>
             <Link href="#" className="hover:text-[#303e51] transition-colors">Contact the creator</Link>
           </div>
         </div>
