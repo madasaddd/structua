@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import BlockRenderer from '@/components/blocks/BlockRenderer'
 import BlockErrorBoundary from '@/components/blocks/BlockErrorBoundary'
-import DayNav from '@/components/DayNav'
+import DayNav, { type DayNavItem } from '@/components/DayNav'
 import { getDayWithGlobalIndex } from '@/lib/utils/indexing'
 
 /* ───────────────── SEO Metadata ───────────────── */
@@ -14,13 +14,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const id = parseInt(dayId, 10)
   if (isNaN(id)) return { title: 'Not Found — Structua' }
 
-  const day = await prisma.day.findUnique({
-    where: { id },
-    include: { week: true },
-  })
+  const [day, globalIndex] = await Promise.all([
+    prisma.day.findUnique({
+      where: { id },
+      include: { week: true },
+    }),
+    getDayWithGlobalIndex(id),
+  ])
 
   if (!day) return { title: 'Not Found — Structua' }
-  const globalIndex = await getDayWithGlobalIndex(id)
 
   return {
     title: `Day ${globalIndex}: ${day.lessonTitle} — Structua`,
@@ -37,22 +39,48 @@ export default async function DayPage({ params }: PageProps) {
     notFound()
   }
 
-  const day = await prisma.day.findUnique({
-    where: { id: dayId },
-    include: {
-      week: true,
-      blocks: {
-        orderBy: { orderIndex: 'asc' },
+  // Fetch the day (with blocks) and published neighbour days in parallel
+  const [day, globalIndex, publishedDays] = await Promise.all([
+    prisma.day.findUnique({
+      where: { id: dayId },
+      include: {
+        week: true,
+        blocks: {
+          orderBy: { orderIndex: 'asc' },
+        },
       },
-    },
-  })
+    }),
+    getDayWithGlobalIndex(dayId),
+    // Fetch only the minimal columns needed for prev/next navigation
+    prisma.day.findMany({
+      where: { isPublished: true },
+      select: { id: true, order: true, weekId: true },
+      orderBy: [{ week: { order: 'asc' } }, { order: 'asc' }],
+    }),
+  ])
 
   // Only allow viewing published days
   if (!day || !day.isPublished) {
     notFound()
   }
 
-  const globalIndex = await getDayWithGlobalIndex(dayId)
+  // Compute prev/next published days from the flat ordered list
+  const currentIndex = publishedDays.findIndex((d) => d.id === dayId)
+
+  // Build lightweight DayNavItem objects for prev/next
+  async function buildNavItem(d: { id: number; order: number; weekId: number } | undefined): Promise<DayNavItem | null> {
+    if (!d) return null
+    const [navGlobal, navDay] = await Promise.all([
+      getDayWithGlobalIndex(d.id),
+      prisma.day.findUnique({ where: { id: d.id }, select: { lessonTitle: true } }),
+    ])
+    return navDay ? { id: d.id, globalDayIndex: navGlobal, lessonTitle: navDay.lessonTitle } : null
+  }
+
+  const [prevDay, nextDay] = await Promise.all([
+    buildNavItem(currentIndex > 0 ? publishedDays[currentIndex - 1] : undefined),
+    buildNavItem(currentIndex !== -1 && currentIndex < publishedDays.length - 1 ? publishedDays[currentIndex + 1] : undefined),
+  ])
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
@@ -109,7 +137,7 @@ export default async function DayPage({ params }: PageProps) {
       </article>
 
       {/* Day Navigation Footer */}
-      <DayNav currentDayId={day.id} />
+      <DayNav prevDay={prevDay} nextDay={nextDay} />
     </div>
   )
 }

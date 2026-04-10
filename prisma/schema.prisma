@@ -42,6 +42,8 @@ model Day {
   blocks      Block[]
 
   @@unique([weekId, order])
+  @@index([weekId])
+  @@index([weekId, order])
   @@map("days")
 }
 
@@ -54,6 +56,8 @@ model Block {
   updatedAt   DateTime @updatedAt @map("updated_at")
   day         Day      @relation(fields: [dayId], references: [id])
 
+  @@index([dayId])
+  @@index([dayId, orderIndex])
   @@map("blocks")
 }
 

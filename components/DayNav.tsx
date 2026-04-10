@@ -1,27 +1,22 @@
 import Link from 'next/link'
-import { prisma } from '@/lib/prisma'
-import { calculateGlobalIndexes } from '@/lib/utils/indexing'
 
-export default async function DayNav({ currentDayId }: { currentDayId: number }) {
-  const rawWeeks = await prisma.week.findMany({
-    include: {
-      days: {
-        where: { isPublished: true },
-        select: { id: true, order: true, lessonTitle: true, isPublished: true },
-        orderBy: { order: 'asc' },
-      },
-    },
-    orderBy: { order: 'asc' },
-  })
+export type DayNavItem = {
+  id: number
+  globalDayIndex: number
+  lessonTitle: string
+}
 
-  const weeks = calculateGlobalIndexes(rawWeeks)
-  const publishedDays = weeks.flatMap(w => w.days)
-  
-  const currentIndex = publishedDays.findIndex(d => d.id === currentDayId)
-  
-  const prevDay = currentIndex > 0 ? publishedDays[currentIndex - 1] : null
-  const nextDay = currentIndex !== -1 && currentIndex < publishedDays.length - 1 ? publishedDays[currentIndex + 1] : null
+type DayNavProps = {
+  prevDay: DayNavItem | null
+  nextDay: DayNavItem | null
+}
 
+/**
+ * Navigation footer shown at the bottom of each student day page.
+ * Receives prev/next day data as props from the parent Server Component
+ * — does NOT make its own database call.
+ */
+export default function DayNav({ prevDay, nextDay }: DayNavProps) {
   return (
     <nav className="my-20 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-gray-100 pt-12">
       <div className="w-full sm:w-auto flex-1">

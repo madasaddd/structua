@@ -28,23 +28,32 @@ export function calculateGlobalIndexes<
 import { prisma } from '@/lib/prisma'
 
 /**
- * Fetches all days, calculates global indexes, and returns a specific day's global index.
- * Useful for single-day queries (like metadata or DayNav).
+ * Calculates a specific day's global index efficiently using two lean queries:
+ * 1. Fetch the target day's week order and the day's own order within that week.
+ * 2. Count how many days exist in all weeks whose order is less than the target week.
+ *
+ * This replaces the previous approach that loaded the entire curriculum (all weeks + all days)
+ * just to compute a single integer. Now it's O(2 small queries) regardless of curriculum size.
  */
-export async function getDayWithGlobalIndex(dayId: number) {
-  const rawWeeks = await prisma.week.findMany({
-    include: {
-      days: {
-        select: { id: true, order: true },
-        orderBy: { order: 'asc' },
-      },
+export async function getDayWithGlobalIndex(dayId: number): Promise<number> {
+  // Step 1: get the target day and its week order
+  const day = await prisma.day.findUnique({
+    where: { id: dayId },
+    select: {
+      order: true,
+      week: { select: { order: true } },
     },
-    orderBy: { order: 'asc' },
   })
 
-  const weeks = calculateGlobalIndexes(rawWeeks)
-  const allDays = weeks.flatMap((w) => w.days)
-  const targetDay = allDays.find((d) => d.id === dayId)
+  if (!day) return 1
 
-  return targetDay?.globalDayIndex ?? 1
+  // Step 2: count all days that belong to weeks with a lower order number
+  const daysInPreviousWeeks = await prisma.day.count({
+    where: {
+      week: { order: { lt: day.week.order } },
+    },
+  })
+
+  // Global index = days before this week + this day's position within its week
+  return daysInPreviousWeeks + day.order
 }

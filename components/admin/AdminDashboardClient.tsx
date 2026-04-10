@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 type Day = { id: number; order: number; lessonTitle: string; isPublished: boolean }
 type Week = { id: number; order: number; themeTitle: string; days: Day[] }
@@ -20,7 +19,6 @@ function calcIndexes(weeks: Week[]): IndexedWeek[] {
 export default function AdminDashboardClient({ initialWeeks }: { initialWeeks: Week[] }) {
   const [weeks, setWeeks] = useState<Week[]>(initialWeeks)
   const [processing, setProcessing] = useState(false)
-  const router = useRouter()
 
   const indexedWeeks = useMemo(() => calcIndexes(weeks), [weeks])
   const totalDays = indexedWeeks.reduce((sum, w) => sum + w.days.length, 0)
@@ -32,7 +30,6 @@ export default function AdminDashboardClient({ initialWeeks }: { initialWeeks: W
     if (res.ok) {
       const newWeek = await res.json()
       setWeeks((prev) => [...prev, { ...newWeek, days: [] }])
-      router.refresh()
     }
     setProcessing(false)
   }
@@ -42,7 +39,6 @@ export default function AdminDashboardClient({ initialWeeks }: { initialWeeks: W
     const res = await fetch(`/api/weeks/${weekId}`, { method: 'DELETE' })
     if (res.ok) {
       setWeeks((prev) => prev.filter((w) => w.id !== weekId))
-      router.refresh()
     }
     setProcessing(false)
   }
@@ -54,7 +50,6 @@ export default function AdminDashboardClient({ initialWeeks }: { initialWeeks: W
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ themeTitle }),
     })
-    router.refresh()
   }
 
   const handleAddDay = async (weekId: number) => {
@@ -69,7 +64,6 @@ export default function AdminDashboardClient({ initialWeeks }: { initialWeeks: W
       setWeeks((prev) =>
         prev.map((w) => (w.id === weekId ? { ...w, days: [...w.days, newDay] } : w))
       )
-      router.refresh()
     } else {
       const errorData = await res.json()
       alert(errorData.error || 'Failed to add day')
@@ -89,7 +83,6 @@ export default function AdminDashboardClient({ initialWeeks }: { initialWeeks: W
             : w
         )
       )
-      router.refresh()
     }
     setProcessing(false)
   }
@@ -110,7 +103,6 @@ export default function AdminDashboardClient({ initialWeeks }: { initialWeeks: W
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ lessonTitle }),
     })
-    router.refresh()
   }
 
   return (

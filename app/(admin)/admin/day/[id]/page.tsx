@@ -9,16 +9,18 @@ export default async function AdminDayPage({ params }: Props) {
   const { id } = await params
   const dayId = parseInt(id, 10)
 
-  const day = await prisma.day.findUnique({
-    where: { id: dayId },
-    include: {
-      blocks: { orderBy: { orderIndex: 'asc' } },
-      week: { select: { order: true, themeTitle: true } },
-    },
-  })
+  const [day, globalIndex] = await Promise.all([
+    prisma.day.findUnique({
+      where: { id: dayId },
+      include: {
+        blocks: { orderBy: { orderIndex: 'asc' } },
+        week: { select: { order: true, themeTitle: true } },
+      },
+    }),
+    getDayWithGlobalIndex(dayId),
+  ])
 
   if (!day) notFound()
-  const globalIndex = await getDayWithGlobalIndex(dayId)
 
   return (
     <DayEditorClient
