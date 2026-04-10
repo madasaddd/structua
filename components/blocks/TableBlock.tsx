@@ -2,6 +2,15 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { TableBlockContent } from '@/lib/validators/blocks'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 export default function TableBlock({ data }: { data: TableBlockContent }) {
   const { caption, headers, rows } = data
@@ -12,14 +21,10 @@ export default function TableBlock({ data }: { data: TableBlockContent }) {
     const el = scrollRef.current
     if (!el) return
 
-    const checkScroll = () => {
-      setIsScrollable(el.scrollWidth > el.clientWidth)
-    }
-
+    const checkScroll = () => setIsScrollable(el.scrollWidth > el.clientWidth)
     checkScroll()
     window.addEventListener('resize', checkScroll)
 
-    // Also listen for scroll to hide the hint when scrolled to the end
     const handleScroll = () => {
       if (!el) return
       const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2
@@ -34,48 +39,52 @@ export default function TableBlock({ data }: { data: TableBlockContent }) {
   }, [])
 
   return (
-    <div className="my-10 overflow-hidden rounded-xl border border-gray-100 shadow-sm ring-1 ring-black ring-opacity-5">
+    <div className="my-10 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       <div
         ref={scrollRef}
         className="overflow-x-auto table-scroll-hint"
         data-scrollable={isScrollable}
       >
-        <table className="min-w-full divide-y divide-gray-200">
+        <Table>
           {caption && (
-            <caption className="bg-gray-50/50 backdrop-blur-sm px-5 py-4 text-left text-sm font-bold text-gray-700 border-b border-gray-100">
+            <TableCaption className="mt-0 mb-0 border-t border-border bg-muted/30 px-4 py-3 text-left text-xs font-medium text-muted-foreground caption-bottom">
               {caption}
-            </caption>
+            </TableCaption>
           )}
-          <thead className="bg-white">
-            <tr>
+          <TableHeader>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
               {headers.map((header, idx) => (
-                <th
+                <TableHead
                   key={idx}
-                  scope="col"
-                  className="px-5 py-4 text-left text-xs font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap"
+                  className="px-5 py-3.5 text-left text-xs font-semibold text-foreground whitespace-nowrap"
                 >
                   {header}
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.map((row, rowIdx) => (
-              <tr key={rowIdx} className="hover:bg-gray-50/50 transition-colors">
+              <TableRow
+                key={rowIdx}
+                className="hover:bg-muted/50 transition-colors border-border"
+              >
                 {row.map((cell, cellIdx) => (
-                  <td
+                  <TableCell
                     key={cellIdx}
-                    className={`px-5 py-4 text-[15px] text-gray-700 ${
-                      cellIdx === 0 ? 'font-semibold text-accent' : 'font-medium'
+                    className={`px-5 py-4 text-sm ${
+                      cellIdx === 0
+                        ? 'font-semibold text-foreground'
+                        : 'text-muted-foreground'
                     }`}
                   >
                     {cell}
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   )
