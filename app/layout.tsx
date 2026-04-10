@@ -1,15 +1,6 @@
 import type { Metadata } from 'next'
-import { DM_Sans, Geist } from 'next/font/google'
 import './globals.css'
 import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-geist-sans'});
-
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  variable: '--font-dm-sans',
-  display: 'swap',
-})
 
 export const metadata: Metadata = {
   title: 'Structua',
@@ -22,7 +13,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={cn("font-sans", dmSans.variable, geist.variable)}>
+    <html lang="en" className="font-sans">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet" />
+      </head>
       <body className="antialiased min-h-screen bg-background text-primary" suppressHydrationWarning>
         {children}
       </body>
