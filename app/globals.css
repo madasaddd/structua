@@ -23,7 +23,7 @@
   --color-callout-gray: #F3F4F6;
   --color-callout-grayBorder: #6B7280;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   /* Sprint 3: Animation tokens */
   --animate-fadeIn: fadeIn 0.4s ease-out both;
