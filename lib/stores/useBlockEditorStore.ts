@@ -14,6 +14,7 @@ interface BlockEditorState {
   reorderBlocks: (activeId: string, overId: string) => void
   setSyncStatus: (status: 'idle' | 'saving' | 'error' | 'saved') => void
   markSaved: () => void
+  applyIdMapping: (mapping: Record<string, string>) => void
 }
 
 export const useBlockEditorStore = create<BlockEditorState>((set, get) => ({
@@ -22,6 +23,11 @@ export const useBlockEditorStore = create<BlockEditorState>((set, get) => ({
   hasUnsavedChanges: false,
 
   setBlocks: (blocks) => set({ blocks, hasUnsavedChanges: false }),
+
+  applyIdMapping: (mapping) =>
+    set((state) => ({
+      blocks: state.blocks.map((b) => (mapping[b.id] ? { ...b, id: mapping[b.id] } : b)),
+    })),
 
   addBlock: (block) => {
     // Generate a temporary ID for local drafting

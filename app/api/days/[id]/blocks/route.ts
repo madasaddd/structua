@@ -53,7 +53,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
         (r as ZodSafeParseSuccess<ValidatedBlock>).data
     )
 
-    await prisma.$transaction(async (tx) => {
+    const idMapping = await prisma.$transaction(async (tx) => {
       // 1. Get current blocks for this day
       const existingBlocks = await tx.block.findMany({ where: { dayId } })
       const incomingIds: string[] = blocks
@@ -69,13 +69,17 @@ export async function PUT(request: NextRequest, { params }: Params) {
       }
 
       // 3. Upsert — create temp blocks, update persisted ones
+      const mapping: Record<string, string> = {}
+
       for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i]
         const orderIndex = i * 1000
 
-        if (block.id.startsWith('temp-')) {
+        const exists = existingBlocks.find((b) => b.id === block.id)
+
+        if (!exists || block.id.startsWith('temp-')) {
           // New block — create without the temp ID (DB generates a real UUID)
-          await tx.block.create({
+          const newBlock = await tx.block.create({
             data: {
               dayId,
               type: block.type,
@@ -83,6 +87,9 @@ export async function PUT(request: NextRequest, { params }: Params) {
               contentData: (block.contentData ?? {}) as Prisma.InputJsonObject,
             },
           })
+          if (block.id.startsWith('temp-')) {
+            mapping[block.id] = newBlock.id
+          }
         } else {
           // Existing block — update in place
           await tx.block.update({
@@ -95,9 +102,11 @@ export async function PUT(request: NextRequest, { params }: Params) {
           })
         }
       }
+
+      return mapping
     })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, idMapping })
   } catch (error) {
     // Log the full error so it appears in Vercel / Next.js server logs
     console.error('[blocks/PUT] Batch save error:', error)

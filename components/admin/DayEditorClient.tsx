@@ -115,15 +115,21 @@ export default function DayEditorClient({ day }: { day: DayData }) {
           body: JSON.stringify({ blocks: payload }),
         })
 
+        const responseData = await res.json()
+
         if (!res.ok) {
           // Persist draft locally so the admin doesn't lose work
           try {
             localStorage.setItem(DRAFT_KEY(day.id), JSON.stringify(blocksToSave))
           } catch { /* storage full — best-effort */ }
-          const detail = await res.json().catch(() => ({}))
-          console.error('[DayEditor] Save failed', res.status, detail)
+          console.error('[DayEditor] Save failed', res.status, responseData)
           setSyncStatus('error')
           return
+        }
+
+        // Apply any ID mapping returned by the backend for temp- blocks
+        if (responseData.idMapping && Object.keys(responseData.idMapping).length > 0) {
+          useBlockEditorStore.getState().applyIdMapping(responseData.idMapping)
         }
 
         // Success — clear any stale draft
