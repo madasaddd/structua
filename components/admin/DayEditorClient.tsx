@@ -219,7 +219,17 @@ export default function DayEditorClient({ day }: { day: DayData }) {
       : 'Save'
 
   return (
-    <div className="mx-auto max-w-3xl p-6 pb-24">
+    <div className="mx-auto max-w-3xl p-6 pb-24 relative">
+      {/* Saving Overlay Lock */}
+      {syncStatus === 'saving' && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/50 backdrop-blur-sm">
+          <div className="rounded-xl bg-white p-6 shadow-2xl flex flex-col items-center gap-4">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"></div>
+            <p className="text-sm font-semibold text-gray-700">Persisting to Database...</p>
+          </div>
+        </div>
+      )}
+
       {/* Draft recovery banner */}
       {savedDraft && (
         <div className="mb-4 flex items-center justify-between gap-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm">

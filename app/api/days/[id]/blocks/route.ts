@@ -53,58 +53,32 @@ export async function PUT(request: NextRequest, { params }: Params) {
         (r as ZodSafeParseSuccess<ValidatedBlock>).data
     )
 
-    const idMapping = await prisma.$transaction(async (tx) => {
-      // 1. Get current blocks for this day
-      const existingBlocks = await tx.block.findMany({ where: { dayId } })
-      const incomingIds: string[] = blocks
-        .map((b: ValidatedBlock) => b.id)
-        .filter((bid: string) => !bid.startsWith('temp-'))
-
-      // 2. Delete blocks that are no longer in the payload
-      const idsToDelete: string[] = existingBlocks
-        .filter((b) => !incomingIds.includes(b.id))
-        .map((b) => b.id)
-      if (idsToDelete.length > 0) {
-        await tx.block.deleteMany({ where: { id: { in: idsToDelete } } })
+    // Prepare the list of blocks to create and the ID mapping
+    const idMapping: Record<string, string> = {}
+    const blocksToCreate = blocks.map((block: ValidatedBlock, i: number) => {
+      const isTemp = block.id.startsWith('temp-')
+      const finalId = isTemp ? crypto.randomUUID() : block.id
+      if (isTemp) {
+        idMapping[block.id] = finalId
       }
-
-      // 3. Upsert — create temp blocks, update persisted ones
-      const mapping: Record<string, string> = {}
-
-      for (let i = 0; i < blocks.length; i++) {
-        const block = blocks[i]
-        const orderIndex = i * 1000
-
-        const exists = existingBlocks.find((b) => b.id === block.id)
-
-        if (!exists || block.id.startsWith('temp-')) {
-          // New block — create without the temp ID (DB generates a real UUID)
-          const newBlock = await tx.block.create({
-            data: {
-              dayId,
-              type: block.type,
-              orderIndex,
-              contentData: (block.contentData ?? {}) as Prisma.InputJsonObject,
-            },
-          })
-          if (block.id.startsWith('temp-')) {
-            mapping[block.id] = newBlock.id
-          }
-        } else {
-          // Existing block — update in place
-          await tx.block.update({
-            where: { id: block.id },
-            data: {
-              type: block.type,
-              orderIndex,
-              contentData: (block.contentData ?? {}) as Prisma.InputJsonObject,
-            },
-          })
-        }
+      return {
+        id: finalId,
+        dayId,
+        type: block.type,
+        orderIndex: i * 1000,
+        contentData: (block.contentData ?? {}) as Prisma.InputJsonObject,
       }
-
-      return mapping
     })
+
+    await prisma.$transaction(async (tx) => {
+      // Wipe: Delete all blocks belonging to this day
+      await tx.block.deleteMany({ where: { dayId } })
+      
+      // Replace: Insert the newly ordered/updated batch atomically
+      if (blocksToCreate.length > 0) {
+        await tx.block.createMany({ data: blocksToCreate })
+      }
+    }, { maxWait: 5000, timeout: 20000 })
 
     return NextResponse.json({ success: true, idMapping })
   } catch (error) {
