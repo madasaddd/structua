@@ -16,5 +16,11 @@ export default async function EditAiConfigPage({ params }: { params: Promise<{ i
     where: { type }
   })
 
-  return <AiConfigForm initialData={config} configId={configId} />
+  // Serialize to plain object — Next.js cannot pass Prisma Date objects to Client Components
+  const serializedConfig = config ? {
+    ...config,
+    updatedAt: config.updatedAt.toISOString()
+  } : null
+
+  return <AiConfigForm initialData={serializedConfig} configId={configId} />
 }
