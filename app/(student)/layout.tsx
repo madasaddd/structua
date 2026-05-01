@@ -1,4 +1,5 @@
 import StudentShell from '@/components/StudentShell'
+import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
 import { calculateGlobalIndexes } from '@/lib/utils/indexing'
@@ -23,8 +24,12 @@ export default async function StudentLayout({
 
   const weeks = calculateGlobalIndexes(rawWeeks) as unknown as import('@/components/Sidebar').SidebarWeek[]
 
+  const vocabCategories = await prisma.vocabCategory.findMany({
+    orderBy: { orderIndex: 'asc' }
+  })
+
   return (
-    <StudentShell weeks={weeks}>
+    <StudentShell weeks={weeks} vocabCategories={vocabCategories}>
       {children}
     </StudentShell>
   )

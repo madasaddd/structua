@@ -29,9 +29,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const weeks = calculateGlobalIndexes(rawWeeks) as unknown as import('@/components/Sidebar').SidebarWeek[]
 
+  const vocabCategories = await prisma.vocabCategory.findMany({
+    orderBy: { orderIndex: 'asc' }
+  })
+
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      <AdminSidebar weeks={weeks} />
+      <AdminSidebar weeks={weeks} vocabCategories={vocabCategories} />
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Admin Topbar */}
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">

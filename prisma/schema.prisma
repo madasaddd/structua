@@ -83,3 +83,142 @@ enum BlockType {
   divider
   image
 }
+
+enum Level {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum PartOfSpeech {
+  Noun
+  Verb
+  Adjective
+  Adverb
+  Preposition
+  Conjunction
+  Pronoun
+  Interjection
+  Phrase
+  PhrasalVerb
+}
+
+model VocabCategory {
+  id          String     @id @default(uuid())
+  name        String
+  orderIndex  Int        @map("order_index")
+  wordlists   Wordlist[]
+
+  @@map("vocab_categories")
+}
+
+model Wordlist {
+  id            String       @id @default(uuid())
+  categoryId    String       @map("category_id")
+  title         String
+  description   String?
+  level         Level?
+  orderIndex    Int          @map("order_index")
+  vocabularies  Vocabulary[]
+  discoveryTask DiscoveryTask?
+
+  category      VocabCategory @relation(fields: [categoryId], references: [id])
+
+  @@map("wordlists")
+}
+
+model Vocabulary {
+  id            String        @id @default(uuid())
+  wordlistId    String        @map("wordlist_id")
+  word          String
+  partOfSpeech  PartOfSpeech?
+  level         Level?
+  defIndo       String        @map("def_indo")
+  defEng        String        @map("def_eng")
+  collocations  Collocation[]
+  wordFamilies  WordFamily[]
+
+  wordlist      Wordlist      @relation(fields: [wordlistId], references: [id])
+
+  @@map("vocabularies")
+}
+
+model Collocation {
+  id          String     @id @default(uuid())
+  vocabId     String     @map("vocab_id")
+  text        String
+  url         String?
+
+  vocabulary  Vocabulary @relation(fields: [vocabId], references: [id], onDelete: Cascade)
+
+  @@map("collocations")
+}
+
+model WordFamily {
+  id           String        @id @default(uuid())
+  vocabId      String        @map("vocab_id")
+  word         String
+  partOfSpeech PartOfSpeech?
+  url          String?
+
+  vocabulary   Vocabulary    @relation(fields: [vocabId], references: [id], onDelete: Cascade)
+
+  @@map("word_families")
+}
+
+model AiConfig {
+  id           String   @id @default(uuid())
+  type         String   // e.g. 'grammar', 'vocab-discovery'
+  name         String   // e.g. 'Discovery Config'
+  baseUrl      String?  @map("base_url")
+  apiKey       String?  @map("api_key")
+  modelName    String?  @map("model_name")
+  globalPrompt String?  @map("global_prompt") @db.Text
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("ai_configs")
+}
+
+model DiscoveryTask {
+  id         String @id @default(uuid())
+  wordlistId String @unique @map("wordlist_id") // 1-to-1 with Wordlist
+  paragraphs DiscoveryParagraph[]
+
+  wordlist   Wordlist @relation(fields: [wordlistId], references: [id], onDelete: Cascade)
+  @@map("discovery_tasks")
+}
+
+model DiscoveryParagraph {
+  id             String @id @default(uuid())
+  taskId         String @map("task_id")
+  orderIndex     Int    @map("order_index")
+  
+  options        ParagraphOption[]
+
+  task           DiscoveryTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  @@map("discovery_paragraphs")
+}
+
+model ParagraphOption {
+  id             String @id @default(uuid())
+  paragraphId    String @map("paragraph_id")
+  content        String @db.Text
+  
+  questions      DiscoveryQuestion[]
+
+  paragraph      DiscoveryParagraph @relation(fields: [paragraphId], references: [id], onDelete: Cascade)
+  @@map("paragraph_options")
+}
+
+model DiscoveryQuestion {
+  id             String @id @default(uuid())
+  optionId       String @map("option_id")
+  orderIndex     Int    @map("order_index")
+  questionText   String @map("question_text")
+
+  option         ParagraphOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  @@map("discovery_questions")
+}
