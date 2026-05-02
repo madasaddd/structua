@@ -44,7 +44,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ wor
             }
           })
         }
-      })
+      }, { timeout: 30000 })
 
       return NextResponse.json({ success: true })
     }
