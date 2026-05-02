@@ -51,7 +51,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ wor
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Failed' }, { status: 500 })
+    const message = error instanceof Error ? error.message : String(error)
+    console.error('[SAVE_VOCABULARIES ERROR]', message)
+    return NextResponse.json({ error: 'Failed', detail: message }, { status: 500 })
   }
 }

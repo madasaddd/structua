@@ -82,7 +82,8 @@ export default function WordlistEditorClient({ wordlist, activeTab = 'vocab', on
       alert('Saved successfully!')
       router.refresh()
     } else {
-      alert('Failed to save.')
+      const errorData = await res.json().catch(() => ({}))
+      alert(`Failed to save. Error: ${errorData.detail || 'Unknown error'}`)
     }
     setIsSaving(false)
   }
