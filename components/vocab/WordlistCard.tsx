@@ -31,7 +31,7 @@ export function WordlistCard({
 
         <div className="space-y-2 mt-auto">
           <Link
-            href={`/vocab/${wordlist.id}`}
+            href={`/vocab/${wordlist.id}/discovery`}
             className="flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
           >
             Discover Vocabularies
