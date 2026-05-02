@@ -40,6 +40,7 @@ export default function AdminVocabDashboardClient({ initialCategories }: { initi
     if (editingCategory) {
       const res = await fetch('/api/vocab', {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'UPDATE_CATEGORY', payload: { id: editingCategory.id, name: categoryName } })
       })
       if (res.ok) {
@@ -48,6 +49,7 @@ export default function AdminVocabDashboardClient({ initialCategories }: { initi
     } else {
       const res = await fetch('/api/vocab', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'CREATE_CATEGORY', payload: { name: categoryName } })
       })
       if (res.ok) {
@@ -66,6 +68,7 @@ export default function AdminVocabDashboardClient({ initialCategories }: { initi
     
     const res = await fetch('/api/vocab', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'CREATE_WORDLIST', payload: { categoryId: activeCategoryIdForWordlist, title: wordlistTitle, description: wordlistDesc } })
     })
     

@@ -74,6 +74,7 @@ export default function WordlistEditorClient({ wordlist, activeTab = 'vocab', on
     
     const res = await fetch(`/api/vocab/${wordlist.id}`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'SAVE_VOCABULARIES', payload: { vocabularies: validVocabs } })
     })
 
@@ -90,6 +91,7 @@ export default function WordlistEditorClient({ wordlist, activeTab = 'vocab', on
     setIsSaving(true)
     const res = await fetch(`/api/vocab`, {
       method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'UPDATE_WORDLIST',
         payload: { id: wordlist.id, title: editTitle, description: editDesc }
