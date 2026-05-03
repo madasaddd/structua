@@ -2,6 +2,8 @@ import StudentShell from '@/components/StudentShell'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 import { calculateGlobalIndexes } from '@/lib/utils/indexing'
 
 export default async function StudentLayout({

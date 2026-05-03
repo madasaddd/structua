@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { WordlistCard } from '@/components/vocab/WordlistCard'
 
+export const dynamic = 'force-dynamic'
+
 export default async function VocabStudentPage() {
   const categories = await prisma.vocabCategory.findMany({
     orderBy: { orderIndex: 'asc' },

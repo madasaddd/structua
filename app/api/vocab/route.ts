@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
           orderIndex: orderCount + 1
         }
       })
+      revalidatePath('/vocab')
       return NextResponse.json(newCategory)
     }
 
@@ -39,6 +41,7 @@ export async function POST(request: Request) {
           orderIndex: orderCount + 1,
         }
       })
+      revalidatePath('/vocab')
       return NextResponse.json(newWordlist)
     }
 
@@ -61,6 +64,7 @@ export async function PUT(request: Request) {
         where: { id: payload.id },
         data: { name: payload.name }
       })
+      revalidatePath('/vocab')
       return NextResponse.json(updated)
     }
 
@@ -72,6 +76,7 @@ export async function PUT(request: Request) {
           description: payload.description
         }
       })
+      revalidatePath('/vocab')
       return NextResponse.json(updated)
     }
     
@@ -94,6 +99,7 @@ export async function DELETE(request: Request) {
 
     if (action === 'DELETE_WORDLIST') {
       await prisma.wordlist.delete({ where: { id } })
+      revalidatePath('/vocab')
       return NextResponse.json({ success: true })
     }
 
