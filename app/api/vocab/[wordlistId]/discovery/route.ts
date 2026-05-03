@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Allow up to 60 seconds for this route on Vercel
+export const maxDuration = 60
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ wordlistId: string }> }
@@ -15,36 +18,43 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
-    // Wipe-and-Replace logic
-    await prisma.$transaction(async (tx) => {
-      // Delete existing DiscoveryTask for this wordlist
-      await tx.discoveryTask.deleteMany({
-        where: { wordlistId }
-      })
+    // Wipe-and-Replace: flatten nested creates into sequential batches
+    // to avoid deep-nested transaction timeouts on large payloads.
+    await prisma.$transaction(
+      async (tx) => {
+        // 1. Wipe existing DiscoveryTask (cascades to paragraphs/options/questions)
+        await tx.discoveryTask.deleteMany({ where: { wordlistId } })
 
-      // Create new DiscoveryTask
-      await tx.discoveryTask.create({
-        data: {
-          wordlistId,
-          paragraphs: {
-            create: paragraphs.map((p: any) => ({
-              orderIndex: p.orderIndex,
-              options: {
-                create: p.options.map((o: any) => ({
-                  content: o.content,
-                  questions: {
-                    create: o.questions.map((q: any) => ({
-                      orderIndex: q.orderIndex,
-                      questionText: q.text
-                    }))
-                  }
+        // 2. Create the DiscoveryTask shell
+        const task = await tx.discoveryTask.create({ data: { wordlistId } })
+
+        // 3. Create paragraphs sequentially, then their options and questions
+        for (const [pIdx, p] of paragraphs.entries()) {
+          const paragraph = await tx.discoveryParagraph.create({
+            data: { taskId: task.id, orderIndex: p.orderIndex ?? pIdx }
+          })
+
+          // 4. Create all options for this paragraph
+          for (const o of p.options) {
+            const option = await tx.paragraphOption.create({
+              data: { paragraphId: paragraph.id, content: o.content }
+            })
+
+            // 5. Batch-create all questions for this option
+            if (o.questions && o.questions.length > 0) {
+              await tx.discoveryQuestion.createMany({
+                data: o.questions.map((q: any, qIdx: number) => ({
+                  optionId: option.id,
+                  orderIndex: q.orderIndex ?? qIdx,
+                  questionText: q.text
                 }))
-              }
-            }))
+              })
+            }
           }
         }
-      })
-    })
+      },
+      { timeout: 30000, maxWait: 10000 }
+    )
 
     return NextResponse.json({ success: true })
   } catch (error) {

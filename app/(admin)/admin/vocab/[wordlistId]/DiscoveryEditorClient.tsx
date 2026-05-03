@@ -14,7 +14,6 @@ type EditParagraph = { id: string, options: EditOption[], activeOptionIndex: num
 
 export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange }: { wordlist: any, activeTab: string, onTabChange: (tab: string) => void }) {
   const router = useRouter()
-  const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<string | null>(null)
   const [csvUploadPIdx, setCsvUploadPIdx] = useState<number | null>(null)
 
@@ -62,11 +61,15 @@ export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange
     return () => window.removeEventListener('scroll', handleScroll)
   }, [paragraphs])
 
-  const handleSave = async () => {
-    setIsSaving(true)
+  const [savingIndices, setSavingIndices] = useState<Set<number>>(new Set())
+  const [savedIndices, setSavedIndices] = useState<Set<number>>(new Set())
+
+  const handleSaveParagraph = async (pIdx: number) => {
+    const p = paragraphs[pIdx]
+    setSavingIndices(prev => new Set(prev).add(pIdx))
+    
     const payload = {
-      wordlistId: wordlist.id,
-      paragraphs: paragraphs.map((p, pIdx) => ({
+      paragraph: {
         id: p.id,
         orderIndex: pIdx,
         options: p.options.map(o => ({
@@ -78,11 +81,11 @@ export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange
             text: q.text
           }))
         }))
-      }))
+      }
     }
 
     try {
-      const res = await fetch(`/api/vocab/${wordlist.id}/discovery`, {
+      const res = await fetch(`/api/vocab/${wordlist.id}/discovery/paragraph`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -90,12 +93,31 @@ export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange
 
       if (!res.ok) throw new Error('Failed to save')
       
+      const savedP = await res.json()
+      
+      // Update local state with the real DB ID if it was new
+      const newParagraphs = [...paragraphs]
+      newParagraphs[pIdx].id = savedP.id
+      setParagraphs(newParagraphs)
+
+      setSavedIndices(prev => new Set(prev).add(pIdx))
+      setTimeout(() => {
+        setSavedIndices(prev => {
+          const next = new Set(prev)
+          next.delete(pIdx)
+          return next
+        })
+      }, 3000)
+
       setLastSaved(new Date().toLocaleString())
-      router.refresh()
     } catch (err) {
-      alert('Failed to save Discovery Task')
+      alert('Failed to save Paragraph ' + (pIdx + 1))
     } finally {
-      setIsSaving(false)
+      setSavingIndices(prev => {
+        const next = new Set(prev)
+        next.delete(pIdx)
+        return next
+      })
     }
   }
 
@@ -112,9 +134,24 @@ export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange
     setParagraphs(newParagraphs)
   }
 
-  const deleteParagraph = (pIdx: number) => {
+  const deleteParagraph = async (pIdx: number) => {
     if (paragraphs.length <= 1) return alert('Must have at least one paragraph')
     if (!confirm('Are you sure you want to delete this paragraph? This action cannot be undone.')) return
+    
+    const p = paragraphs[pIdx]
+    // If it has a real UUID (longer than 10 chars), delete from DB
+    if (p.id.length > 15) {
+      try {
+        const res = await fetch(`/api/vocab/${wordlist.id}/discovery/paragraph?id=${p.id}`, {
+          method: 'DELETE'
+        })
+        if (!res.ok) throw new Error('Failed to delete from server')
+      } catch (err) {
+        alert('Failed to delete paragraph from database')
+        return
+      }
+    }
+
     const newParagraphs = [...paragraphs]
     newParagraphs.splice(pIdx, 1)
     setParagraphs(newParagraphs)
@@ -153,7 +190,7 @@ export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange
           newParagraphs[pIdx].options = newOptions
           newParagraphs[pIdx].activeOptionIndex = 0
           setParagraphs(newParagraphs)
-          alert('CSV successfully processed! Please click "Save Discovery" to commit these changes.')
+          alert('CSV successfully processed! Please click "Save" on this paragraph to commit changes.')
           setCsvUploadPIdx(null)
         } else {
           alert('No valid options found in CSV. Ensure you have a "paragraph_text" column.')
@@ -209,6 +246,9 @@ export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange
           <div className="space-y-8">
             {paragraphs.map((p, pIdx) => {
               const activeOption = p.options[p.activeOptionIndex]
+              const isSaving = savingIndices.has(pIdx)
+              const isSaved = savedIndices.has(pIdx)
+
               return (
                 <div key={p.id} id={`paragraph-${p.id}`} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden scroll-mt-24 p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -295,6 +335,36 @@ export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange
                       </button>
                     </div>
                   </div>
+
+                  {/* Save button — bottom-right of card */}
+                  <div className="flex justify-end pt-5 mt-5 border-t border-gray-100">
+                    <button 
+                      onClick={() => handleSaveParagraph(pIdx)}
+                      disabled={isSaving}
+                      className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
+                        isSaved 
+                        ? 'bg-green-50 text-green-700 border border-green-200' 
+                        : 'bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 shadow-sm'
+                      }`}
+                    >
+                      {isSaving ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+                          Saving...
+                        </>
+                      ) : isSaved ? (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                          Saved!
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                          Save Paragraph
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               )
             })}
@@ -320,27 +390,23 @@ export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange
            
            <div className="flex-1 overflow-y-auto mb-4 pr-2 scrollbar-thin scrollbar-thumb-gray-200 space-y-3">
              {paragraphs.map((p, i) => (
-                <button 
-                  key={p.id}
-                  onClick={() => document.getElementById(`paragraph-${p.id}`)?.scrollIntoView({ behavior: 'smooth' })}
-                  className={`block w-full text-left text-[13px] transition-all truncate ${activeParagraphId === p.id ? 'text-slate-900 font-bold' : 'text-gray-400 hover:text-gray-600 font-medium'}`}
-                >
-                  Paragraph {i + 1}
-                </button>
+                <div key={p.id} className="flex items-center justify-between group">
+                  <button 
+                    onClick={() => document.getElementById(`paragraph-${p.id}`)?.scrollIntoView({ behavior: 'smooth' })}
+                    className={`block flex-1 text-left text-[13px] transition-all truncate ${activeParagraphId === p.id ? 'text-slate-900 font-bold' : 'text-gray-400 hover:text-gray-600 font-medium'}`}
+                  >
+                    Paragraph {i + 1}
+                  </button>
+                  {savingIndices.has(i) && (
+                    <svg className="animate-spin h-3 w-3 text-blue-600" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+                  )}
+                </div>
              ))}
            </div>
 
-           <div className="pt-4 mt-auto space-y-2">
-             <button 
-               onClick={handleSave}
-               disabled={isSaving}
-               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 text-white text-sm font-bold rounded-lg shadow-sm hover:bg-slate-800 disabled:opacity-50"
-             >
-               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-               {isSaving ? 'Saving...' : 'Save Discovery'}
-             </button>
+           <div className="pt-4 mt-auto">
              {lastSaved && (
-               <p className="text-[10px] text-gray-400 text-center">Last saved: {lastSaved}</p>
+               <p className="text-[10px] text-gray-400 text-center">Latest update: {lastSaved}</p>
              )}
            </div>
          </div>
