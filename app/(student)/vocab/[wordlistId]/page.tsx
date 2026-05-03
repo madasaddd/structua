@@ -29,7 +29,7 @@ export default async function WordlistDetailPage({ params }: { params: Promise<{
         <div>
            <Link href="/vocab" className="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Category</Link>
            <h1 className="text-2xl font-bold text-slate-900">
-             {wordlist.category.name} <span className="text-gray-400 font-normal mx-1">—</span> {wordlist.title}
+             {wordlist.title}
            </h1>
            {wordlist.description && (
              <p className="text-gray-500 mt-2">{wordlist.description}</p>
@@ -53,7 +53,7 @@ export default async function WordlistDetailPage({ params }: { params: Promise<{
         <div className="sticky top-10 bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-4">
           <div>
             <h3 className="font-bold text-gray-900 text-base leading-tight">
-               {wordlist.category.name} <span className="text-gray-400 font-normal">—</span> {wordlist.title}
+               {wordlist.title}
             </h3>
             {wordlist.level && (
               <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full uppercase mt-2 inline-block">

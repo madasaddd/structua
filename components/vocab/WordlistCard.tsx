@@ -17,7 +17,7 @@ export function WordlistCard({
       <div className="p-5 flex-1 flex flex-col">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-bold text-gray-900 text-base leading-tight">
-             {category.name} <span className="text-gray-400 font-normal ml-1">—</span> {wordlist.title}
+             {wordlist.title}
           </h3>
           {wordlist.level && (
             <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full uppercase shrink-0 ml-2">
