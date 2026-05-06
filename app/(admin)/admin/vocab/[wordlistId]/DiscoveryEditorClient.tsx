@@ -229,9 +229,9 @@ export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange
           {/* Header */}
           <div className="flex items-center justify-between pb-1">
             <div>
-              <Link href="/admin/vocab" className="text-sm font-medium text-blue-600 hover:text-blue-700 mb-2 inline-block">← Back to Dashboard</Link>
-              <h1 className="text-2xl font-bold text-gray-900">{wordlist.category.name} — {wordlist.title}</h1>
-              <p className="text-sm text-gray-500 mt-1">{wordlist.description || 'No description provided.'}</p>
+              <Link href="/admin/vocab" className="text-sm font-medium text-blue-600 hover:text-blue-700 mb-3 inline-block">← Back to Dashboard</Link>
+              <p className="text-sm text-gray-500 font-medium mb-1">[{wordlist.category.name}]</p>
+              <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Discovery – {wordlist.title}</h1>
             </div>
           </div>
 

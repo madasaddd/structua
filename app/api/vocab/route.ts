@@ -79,6 +79,17 @@ export async function PUT(request: Request) {
       revalidatePath('/vocab')
       return NextResponse.json(updated)
     }
+
+    if (action === 'REORDER_CATEGORIES') {
+      // payload.order is an array of { id, orderIndex }
+      await Promise.all(
+        payload.order.map(({ id, orderIndex }: { id: string; orderIndex: number }) =>
+          prisma.vocabCategory.update({ where: { id }, data: { orderIndex } })
+        )
+      )
+      revalidatePath('/vocab')
+      return NextResponse.json({ success: true })
+    }
     
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
   } catch (error) {
@@ -99,6 +110,12 @@ export async function DELETE(request: Request) {
 
     if (action === 'DELETE_WORDLIST') {
       await prisma.wordlist.delete({ where: { id } })
+      revalidatePath('/vocab')
+      return NextResponse.json({ success: true })
+    }
+
+    if (action === 'DELETE_CATEGORY') {
+      await prisma.vocabCategory.delete({ where: { id } })
       revalidatePath('/vocab')
       return NextResponse.json({ success: true })
     }

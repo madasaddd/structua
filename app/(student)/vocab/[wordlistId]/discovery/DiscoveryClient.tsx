@@ -158,9 +158,12 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
 
       {/* Main content */}
       <div className="flex-1 space-y-6">
-        <h1 className="text-2xl font-bold text-slate-900">
-          {wordlist.category.name} <span className="text-gray-400 font-normal mx-1">—</span> Discover
-        </h1>
+        <div>
+          <p className="text-sm text-gray-500 font-medium mb-1">[{wordlist.category.name}]</p>
+          <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">
+            Discovery – {wordlist.title}
+          </h1>
+        </div>
 
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 space-y-8">
 

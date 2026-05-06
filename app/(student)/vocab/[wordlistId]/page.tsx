@@ -27,8 +27,9 @@ export default async function WordlistDetailPage({ params }: { params: Promise<{
       {/* Main Content */}
       <div className="flex-1 space-y-6">
         <div>
-           <Link href="/vocab" className="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Category</Link>
-           <h1 className="text-2xl font-bold text-slate-900">
+           <Link href="/vocab" className="text-sm text-blue-600 hover:underline mb-3 inline-block">← Back to Category</Link>
+           <p className="text-sm text-gray-500 font-medium mb-1">[{wordlist.category.name}]</p>
+           <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">
              {wordlist.title}
            </h1>
            {wordlist.description && (

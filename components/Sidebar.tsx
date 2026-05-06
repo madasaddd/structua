@@ -70,7 +70,7 @@ export default function Sidebar({ weeks, vocabCategories = [], isOpen = false, o
   useEffect(() => {
     if (!isVocab) return
     const handleScroll = () => {
-      let currentId = null
+      let currentId: string | null = null
       for (const cat of vocabCategories) {
         const el = document.getElementById(`category-${cat.id}`)
         if (el) {
@@ -80,9 +80,9 @@ export default function Sidebar({ weeks, vocabCategories = [], isOpen = false, o
           }
         }
       }
-      if (currentId) setActiveVocabId(currentId)
+      setActiveVocabId(currentId ?? (vocabCategories[0]?.id ?? null))
     }
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
   }, [isVocab, vocabCategories])
@@ -134,8 +134,8 @@ export default function Sidebar({ weeks, vocabCategories = [], isOpen = false, o
                    <button
                      key={cat.id}
                      onClick={() => {
-                       document.getElementById(`category-${cat.id}`)?.scrollIntoView({ behavior: 'smooth' })
                        setActiveVocabId(cat.id)
+                       document.getElementById(`category-${cat.id}`)?.scrollIntoView({ behavior: 'smooth' })
                      }}
                      className={`w-full text-left px-3 py-2 text-[13px] rounded-lg transition-colors font-sans ${
                          isActive
@@ -194,16 +194,14 @@ export default function Sidebar({ weeks, vocabCategories = [], isOpen = false, o
                </div>
              )}
           </div>
-          {!isVocab && (
-             <div className="border-t border-gray-200/50 p-4 shrink-0 bg-white">
-              <a href="https://forms.gle/3JwFx1221e9NZVPm7" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-sans font-bold text-gray-600 hover:bg-white hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#303e51]">
-                <svg className="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-                Give Feedback
-              </a>
-            </div>
-          )}
+          <div className="border-t border-gray-200/50 p-4 shrink-0 bg-white">
+            <a href="https://forms.gle/3JwFx1221e9NZVPm7" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-sans font-bold text-gray-600 hover:bg-white hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#303e51]">
+              <svg className="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+              Give Feedback
+            </a>
+          </div>
         </div>
       </div>
     </div>
