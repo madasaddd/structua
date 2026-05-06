@@ -20,31 +20,28 @@ export async function POST(request: Request, { params }: { params: Promise<{ wor
     if (action === 'SAVE_VOCABULARIES') {
       const { vocabularies } = payload
 
-      await prisma.$transaction(async (tx) => {
-        // Wipe existing vocabularies for this wordlist
-        // Collocations and WordFamilies will cascade delete
-        await tx.vocabulary.deleteMany({ where: { wordlistId: resolvedParams.wordlistId } })
-        
-        // Insert new ones
-        for (const vocab of vocabularies) {
-          await tx.vocabulary.create({
-            data: {
-              wordlistId: resolvedParams.wordlistId,
-              word: vocab.word,
-              partOfSpeech: vocab.partOfSpeech || null,
-              level: vocab.level || null,
-              defIndo: vocab.defIndo,
-              defEng: vocab.defEng,
-              collocations: {
-                create: vocab.collocations.map((c: any) => ({ text: c.text, url: c.url || null }))
-              },
-              wordFamilies: {
-                create: vocab.wordFamilies.map((w: any) => ({ word: w.word, partOfSpeech: w.partOfSpeech || null, url: w.url || null }))
-              }
+      // Delete existing vocabularies (collocations + wordFamilies cascade)
+      await prisma.vocabulary.deleteMany({ where: { wordlistId: resolvedParams.wordlistId } })
+      
+      // Insert new ones sequentially
+      for (const vocab of vocabularies) {
+        await prisma.vocabulary.create({
+          data: {
+            wordlistId: resolvedParams.wordlistId,
+            word: vocab.word,
+            partOfSpeech: vocab.partOfSpeech || null,
+            level: vocab.level || null,
+            defIndo: vocab.defIndo,
+            defEng: vocab.defEng,
+            collocations: {
+              create: vocab.collocations.map((c: any) => ({ text: c.text, url: c.url || null }))
+            },
+            wordFamilies: {
+              create: vocab.wordFamilies.map((w: any) => ({ word: w.word, partOfSpeech: w.partOfSpeech || null, url: w.url || null }))
             }
-          })
-        }
-      }, { timeout: 30000 })
+          }
+        })
+      }
 
       return NextResponse.json({ success: true })
     }

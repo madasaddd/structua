@@ -70,15 +70,11 @@ export async function PUT(request: NextRequest, { params }: Params) {
       }
     })
 
-    await prisma.$transaction(async (tx) => {
-      // Wipe: Delete all blocks belonging to this day
-      await tx.block.deleteMany({ where: { dayId } })
-      
-      // Replace: Insert the newly ordered/updated batch atomically
-      if (blocksToCreate.length > 0) {
-        await tx.block.createMany({ data: blocksToCreate })
-      }
-    }, { maxWait: 5000, timeout: 20000 })
+    // Sequential queries (pgbouncer Transaction mode compatible)
+    await prisma.block.deleteMany({ where: { dayId } })
+    if (blocksToCreate.length > 0) {
+      await prisma.block.createMany({ data: blocksToCreate })
+    }
 
     return NextResponse.json({ success: true, idMapping })
   } catch (error) {

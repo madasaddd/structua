@@ -16,24 +16,10 @@ export async function PUT(
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Wipe-and-Replace atomic transaction logic
-    const config = await prisma.$transaction(async (tx) => {
-      // 1. Wipe existing config of this type
-      await tx.aiConfig.deleteMany({
-        where: { type }
-      })
-
-      // 2. Replace with new config
-      return await tx.aiConfig.create({
-        data: {
-          type,
-          name,
-          baseUrl,
-          apiKey,
-          modelName,
-          globalPrompt
-        }
-      })
+    // Sequential queries (pgbouncer Transaction mode compatible)
+    await prisma.aiConfig.deleteMany({ where: { type } })
+    const config = await prisma.aiConfig.create({
+      data: { type, name, baseUrl, apiKey, modelName, globalPrompt }
     })
 
     return NextResponse.json(config)

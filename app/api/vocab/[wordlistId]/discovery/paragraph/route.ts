@@ -14,67 +14,47 @@ export async function POST(
       return NextResponse.json({ error: 'Missing paragraph data' }, { status: 400 })
     }
 
-    const result = await prisma.$transaction(async (tx) => {
-      // 1. Ensure DiscoveryTask exists
-      let task = await tx.discoveryTask.findUnique({
-        where: { wordlistId }
-      })
+    // 1. Ensure DiscoveryTask exists
+    let task = await prisma.discoveryTask.findUnique({ where: { wordlistId } })
+    if (!task) {
+      task = await prisma.discoveryTask.create({ data: { wordlistId } })
+    }
 
-      if (!task) {
-        task = await tx.discoveryTask.create({
-          data: { wordlistId }
+    // 2. Upsert the Paragraph
+    let existingParagraph = null
+    if (paragraph.id && paragraph.id.length > 20) {
+      existingParagraph = await prisma.discoveryParagraph.findUnique({ where: { id: paragraph.id } })
+    }
+
+    const dbParagraph = existingParagraph
+      ? await prisma.discoveryParagraph.update({
+          where: { id: paragraph.id },
+          data: { orderIndex: paragraph.orderIndex }
         })
-      }
-
-      // 2. Upsert the Paragraph
-      // If paragraph.id is a temporary random string from frontend, we treat it as new
-      // unless we can find it by id.
-      let existingParagraph = null
-      if (paragraph.id && paragraph.id.length > 20) { // Basic check for UUID vs random string
-         existingParagraph = await tx.discoveryParagraph.findUnique({
-            where: { id: paragraph.id }
-         })
-      }
-
-      const dbParagraph = existingParagraph 
-        ? await tx.discoveryParagraph.update({
-            where: { id: paragraph.id },
-            data: { orderIndex: paragraph.orderIndex }
-          })
-        : await tx.discoveryParagraph.create({
-            data: { 
-              taskId: task.id, 
-              orderIndex: paragraph.orderIndex 
-            }
-          })
-
-      // 3. Wipe existing options for this paragraph (cascades to questions)
-      await tx.paragraphOption.deleteMany({
-        where: { paragraphId: dbParagraph.id }
-      })
-
-      // 4. Create new options and questions
-      for (const o of paragraph.options) {
-        const option = await tx.paragraphOption.create({
-          data: {
-            paragraphId: dbParagraph.id,
-            content: o.content
-          }
+      : await prisma.discoveryParagraph.create({
+          data: { taskId: task.id, orderIndex: paragraph.orderIndex }
         })
 
-        if (o.questions && o.questions.length > 0) {
-          await tx.discoveryQuestion.createMany({
-            data: o.questions.map((q: any, qIdx: number) => ({
-              optionId: option.id,
-              orderIndex: q.orderIndex ?? qIdx,
-              questionText: q.text
-            }))
-          })
-        }
-      }
+    // 3. Wipe existing options (cascades to questions)
+    await prisma.paragraphOption.deleteMany({ where: { paragraphId: dbParagraph.id } })
 
-      return dbParagraph
-    })
+    // 4. Create new options and questions
+    for (const o of paragraph.options) {
+      const option = await prisma.paragraphOption.create({
+        data: { paragraphId: dbParagraph.id, content: o.content }
+      })
+      if (o.questions && o.questions.length > 0) {
+        await prisma.discoveryQuestion.createMany({
+          data: o.questions.map((q: any, qIdx: number) => ({
+            optionId: option.id,
+            orderIndex: q.orderIndex ?? qIdx,
+            questionText: q.text
+          }))
+        })
+      }
+    }
+
+    const result = dbParagraph
 
     return NextResponse.json(result)
   } catch (error) {
