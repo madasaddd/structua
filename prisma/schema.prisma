@@ -125,7 +125,7 @@ model Wordlist {
   vocabularies  Vocabulary[]
   discoveryTask DiscoveryTask?
 
-  category      VocabCategory @relation(fields: [categoryId], references: [id])
+  category      VocabCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@map("wordlists")
 }
@@ -141,7 +141,7 @@ model Vocabulary {
   collocations  Collocation[]
   wordFamilies  WordFamily[]
 
-  wordlist      Wordlist      @relation(fields: [wordlistId], references: [id])
+  wordlist      Wordlist      @relation(fields: [wordlistId], references: [id], onDelete: Cascade)
 
   @@map("vocabularies")
 }
