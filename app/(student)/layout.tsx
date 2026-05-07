@@ -30,8 +30,17 @@ export default async function StudentLayout({
     orderBy: { orderIndex: 'asc' }
   })
 
+  // Build a map of wordlistId -> categoryId so the sidebar can highlight the active category
+  const wordlists = await prisma.wordlist.findMany({
+    select: { id: true, categoryId: true }
+  })
+  const wordlistCategoryMap: Record<string, string> = {}
+  for (const wl of wordlists) {
+    wordlistCategoryMap[wl.id] = wl.categoryId
+  }
+
   return (
-    <StudentShell weeks={weeks} vocabCategories={vocabCategories}>
+    <StudentShell weeks={weeks} vocabCategories={vocabCategories} wordlistCategoryMap={wordlistCategoryMap}>
       {children}
     </StudentShell>
   )

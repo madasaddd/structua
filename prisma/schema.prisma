@@ -178,6 +178,8 @@ model AiConfig {
   apiKey       String?  @map("api_key")
   modelName    String?  @map("model_name")
   globalPrompt String?  @map("global_prompt") @db.Text
+  jsonFileUrl  String?  @map("json_file_url")
+  jsonFileName String?  @map("json_file_name")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("ai_configs")

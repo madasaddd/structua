@@ -6,17 +6,19 @@ import Sidebar, { SidebarWeek } from '@/components/Sidebar'
 export default function StudentShell({
   weeks,
   vocabCategories = [],
+  wordlistCategoryMap = {},
   children,
 }: {
   weeks: SidebarWeek[]
   vocabCategories?: { id: string; name: string; orderIndex: number }[]
+  wordlistCategoryMap?: Record<string, string>
   children: React.ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar weeks={weeks} vocabCategories={vocabCategories} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar weeks={weeks} vocabCategories={vocabCategories} wordlistCategoryMap={wordlistCategoryMap} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile Top Bar */}

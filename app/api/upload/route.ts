@@ -14,9 +14,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/json']
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'Invalid file type. Only JPEG, PNG, WebP and GIF are allowed.' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid file type. Only JPEG, PNG, WebP, GIF, and JSON are allowed.' }, { status: 400 })
     }
 
     const MAX_SIZE = 5 * 1024 * 1024 // 5 MB

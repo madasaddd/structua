@@ -34,16 +34,46 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
   const [isEvaluating, setIsEvaluating] = useState(false)
   const [evaluationResults, setEvaluationResults] = useState<ResultItem[] | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [totalDiscoveredCount, setTotalDiscoveredCount] = useState(0)
+  const [showCompletionModal, setShowCompletionModal] = useState(false)
 
-  // Load dotlottie web component script once
+  // Lottie logic for loading and confetti
+  const loadingCanvasRef = useRef<HTMLCanvasElement>(null)
+  const confettiCanvasRef = useRef<HTMLCanvasElement>(null)
+
   useEffect(() => {
-    if (document.querySelector('script[data-dotlottie]')) return
-    const script = document.createElement('script')
-    script.src = 'https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.10/dist/dotlottie-wc.js'
-    script.type = 'module'
-    script.setAttribute('data-dotlottie', '1')
-    document.head.appendChild(script)
-  }, [])
+    let loadingLottie: any = null
+    if (isEvaluating && loadingCanvasRef.current) {
+      import('@lottiefiles/dotlottie-web').then(({ DotLottie }) => {
+        loadingLottie = new DotLottie({
+          autoplay: true,
+          loop: true,
+          canvas: loadingCanvasRef.current!,
+          src: "/cat Mark loading.lottie",
+        })
+      })
+    }
+    return () => {
+      if (loadingLottie) loadingLottie.destroy()
+    }
+  }, [isEvaluating])
+
+  useEffect(() => {
+    let confettiLottie: any = null
+    if (showConfetti && confettiCanvasRef.current) {
+      import('@lottiefiles/dotlottie-web').then(({ DotLottie }) => {
+        confettiLottie = new DotLottie({
+          autoplay: true,
+          loop: false,
+          canvas: confettiCanvasRef.current!,
+          src: "https://lottie.host/4531cf94-3fb1-4240-b4c8-7a95fadd34f7/JzBZyDY5re.lottie",
+        })
+      })
+    }
+    return () => {
+      if (confettiLottie) confettiLottie.destroy()
+    }
+  }, [showConfetti])
 
   const handleRegenerate = () => {
     if (currentParagraph.options.length <= 1) return
@@ -80,6 +110,11 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
       const data = await res.json()
       if (data.results) {
         setEvaluationResults(data.results)
+        
+        // Count correct answers for the final modal
+        const newlyCorrect = data.results.filter((r: any) => r.status === 'correct').length
+        setTotalDiscoveredCount(prev => prev + newlyCorrect)
+
         setShowConfetti(true)
         setTimeout(() => setShowConfetti(false), 3000)
       } else {
@@ -94,13 +129,13 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
   }
 
   const handleContinue = () => {
-    setEvaluationResults(null)
-    setAnswers({})
-    setActiveOptionIndex(0)
     if (currentParagraphIndex < paragraphs.length - 1) {
+      setEvaluationResults(null)
+      setAnswers({})
+      setActiveOptionIndex(0)
       setCurrentParagraphIndex(prev => prev + 1)
     } else {
-      router.push(`/vocab/${wordlist.id}`)
+      setShowCompletionModal(true)
     }
   }
 
@@ -131,28 +166,24 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
 
   const hasResults = evaluationResults !== null
 
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col lg:flex-row gap-8 relative font-sans">
 
       {/* Evaluating overlay */}
       {isEvaluating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-10 h-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" />
-            <p className="text-lg font-bold text-slate-900">Evaluating your answers...</p>
+          <div className="flex flex-col items-center gap-6">
+            <canvas ref={loadingCanvasRef} style={{ width: '250px', height: '250px' }} />
+            <p className="text-xl font-bold text-slate-900">Evaluating your answers...</p>
           </div>
         </div>
       )}
 
       {/* Confetti overlay */}
       {showConfetti && (
-        <div className="fixed inset-0 z-[200] pointer-events-none">
-          {/* @ts-ignore */}
-          <dotlottie-wc
-            src="https://lottie.host/4531cf94-3fb1-4240-b4c8-7a95fadd34f7/JzBZyDY5re.lottie"
-            style={{ width: '100vw', height: '100vh' }}
-            autoplay
-          />
+        <div className="fixed inset-0 z-[200] pointer-events-none flex items-center justify-center">
+          <canvas ref={confettiCanvasRef} style={{ width: '100vw', height: '100vh' }} />
         </div>
       )}
 
@@ -315,6 +346,44 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
           </div>
         </div>
       </div>
+
+      {/* Completion Modal */}
+      {showCompletionModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-10 flex flex-col items-center text-center animate-in fade-in zoom-in duration-300">
+            {/* Green Checkmark Circle */}
+            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+              <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-200">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={4}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+
+            <h2 className="text-3xl font-extrabold text-slate-900 mb-2">You did it!</h2>
+            <p className="text-gray-500 text-lg mb-10">
+              You've successfully discovered <span className="font-bold text-slate-900">{totalDiscoveredCount}</span> new words.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 w-full">
+              <a 
+                href="https://forms.gle/3JwFx1221e9NZVPm7" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex-1 px-6 py-3 border-2 border-gray-100 text-slate-700 font-bold rounded-2xl hover:bg-gray-50 transition-all text-center"
+              >
+                Give Feedback
+              </a>
+              <button 
+                onClick={() => router.push(`/vocab/${wordlist.id}`)}
+                className="flex-1 px-6 py-3 bg-[#111827] text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200"
+              >
+                Back to Wordlist
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )

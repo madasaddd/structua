@@ -10,7 +10,7 @@ export async function PUT(
     const configId = resolvedParams.id
     const body = await request.json()
     
-    const { type, name, baseUrl, apiKey, modelName, globalPrompt } = body
+    const { type, name, baseUrl, apiKey, modelName, globalPrompt, jsonFileUrl, jsonFileName } = body
 
     if (!type || !name) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -19,7 +19,7 @@ export async function PUT(
     // Sequential queries (pgbouncer Transaction mode compatible)
     await prisma.aiConfig.deleteMany({ where: { type } })
     const config = await prisma.aiConfig.create({
-      data: { type, name, baseUrl, apiKey, modelName, globalPrompt }
+      data: { type, name, baseUrl, apiKey, modelName, globalPrompt, jsonFileUrl, jsonFileName }
     })
 
     return NextResponse.json(config)
