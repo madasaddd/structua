@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import DiscoveryClient from './DiscoveryClient'
+import { NoContentFeature } from '@/components/NoContentFeature'
 
 export default async function DiscoveryPage({ params }: { params: Promise<{ wordlistId: string }> | { wordlistId: string } }) {
   const resolvedParams = await params
@@ -28,12 +29,7 @@ export default async function DiscoveryPage({ params }: { params: Promise<{ word
   })
 
   if (!wordlist || !wordlist.discoveryTask || wordlist.discoveryTask.paragraphs.length === 0) {
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-        <h1 className="text-2xl font-bold text-slate-900 mb-4">Discovery Task Not Found</h1>
-        <p className="text-gray-500">There are no discovery tasks available for this wordlist yet.</p>
-      </div>
-    )
+    return <NoContentFeature backHref={`/vocab/${resolvedParams.wordlistId}`} />
   }
 
   return <DiscoveryClient wordlist={wordlist} />

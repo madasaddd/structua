@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useParams, usePathname, useRouter } from 'next/navigation'
+import { WeeklyUpdateModal } from '@/components/WeeklyUpdateModal'
 
 export type SidebarDay = {
   id: number
@@ -182,9 +184,22 @@ export default function Sidebar({
             <span className="text-[10px] font-bold">Vocab</span>
           </button>
 
-          <div className="mt-auto mb-4">
+          <div className="mt-auto mb-4 flex flex-col items-center gap-2">
+            {/* Feedback Link */}
+            <a 
+              href="https://forms.gle/3JwFx1221e9NZVPm7" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-14 items-center justify-center p-2 rounded-xl flex flex-col gap-1 transition-colors text-gray-500 hover:bg-gray-50"
+            >
+              <svg className="w-6 h-6 mb-0.5" fill="currentColor" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6.5,25.5v4c0.016,2.812,1.344,2.375,2.328,1.531L14.5,25.91v2.59c0,2.43,0.56,3,3,3h9c0,0,5.209,6.125,5.25,6.084 c0.75,0.916,2.781,0.604,2.75-1.084v-5h3c2.45,0,3-0.609,3-3v-15c0-2.4-0.59-3-3-3h-10v-2c0-2.47-0.46-3-3-3h-21c-2.36,0-3,0.51-3,3 v13c0,2.439,0.55,4,3,4H6.5z M31.5,28.5v4.721l-4-4.721h-9c-0.75,0-1-0.27-1-1v-13c0-0.67,0.31-1,1-1h18c0.689,0,1,0.37,1,0.94V27.5 c0,0.721-0.359,1-1,1H31.5z"/>
+              </svg>
+              <span className="text-[10px] font-bold">Feedback</span>
+            </a>
+
             {/* Mobile close button */}
-            <button onClick={onClose} className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <button onClick={onClose} className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors mt-2">
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
@@ -241,21 +256,16 @@ export default function Sidebar({
                             const isActive = day.id === activeDayId
                             return (
                               <li key={day.id}>
-                                {day.isPublished ? (
-                                  <Link href={`/day/${day.id}`} onClick={() => onClose?.()} className={`flex items-center rounded-lg px-2 py-2 text-[13px] transition-all ${isActive ? 'bg-[#EFF3FC] font-medium text-[#221B2F]' : 'font-normal text-gray-500 hover:bg-blue-50/50'}`}>
-                                    {isActive ? (
-                                      <svg className="mr-3 h-4 w-4 shrink-0 text-[#221B2F]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" /></svg>
-                                    ) : (
-                                      <svg className="mr-3 h-3 w-3 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
-                                    )}
-                                    <span className="truncate flex-1 font-sans">Day {day.globalDayIndex}: {day.lessonTitle}</span>
-                                  </Link>
-                                ) : (
-                                  <div className="flex items-center rounded-lg px-3 py-2 text-[13px] font-normal text-gray-400 cursor-not-allowed">
-                                    <svg className="mr-3 h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" strokeDasharray="4 4" /></svg>
-                                    <span className="truncate flex-1 font-sans">Day {day.globalDayIndex}: {day.lessonTitle}</span>
-                                  </div>
-                                )}
+                                <Link href={`/day/${day.id}`} onClick={() => onClose?.()} className={`flex items-center rounded-lg px-2 py-2 text-[13px] transition-all ${isActive ? 'bg-[#EFF3FC] font-medium text-[#221B2F]' : 'font-normal text-gray-500 hover:bg-blue-50/50'}`}>
+                                  {isActive ? (
+                                    <svg className="mr-3 h-4 w-4 shrink-0 text-[#221B2F]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" /></svg>
+                                  ) : day.isPublished ? (
+                                    <svg className="mr-3 h-3 w-3 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
+                                  ) : (
+                                    <svg className="mr-3 h-3 w-3 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" strokeDasharray="4 4" /></svg>
+                                  )}
+                                  <span className={`truncate flex-1 font-sans ${!day.isPublished && !isActive ? 'text-gray-400' : ''}`}>Day {day.globalDayIndex}: {day.lessonTitle}</span>
+                                </Link>
                               </li>
                             )
                           })}
@@ -268,12 +278,25 @@ export default function Sidebar({
             )}
           </div>
           <div className="border-t border-gray-200/50 p-4 shrink-0 bg-white">
-            <a href="https://forms.gle/3JwFx1221e9NZVPm7" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-sans font-bold text-gray-600 hover:bg-white hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#303e51]">
-              <svg className="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
-              Give Feedback
-            </a>
+            <div className="bg-[#FFFAF1] rounded-lg p-4 flex flex-col gap-4">
+              <div className="flex justify-between items-center gap-3">
+                <div className="flex-1">
+                  <h3 className="text-[14px] font-bold text-slate-900 leading-tight mb-1">Stay in the loop</h3>
+                  <p className="text-[12px] text-gray-500 leading-snug">
+                    New features in your inbox every Saturday.
+                  </p>
+                </div>
+                <div className="relative w-10 h-10 shrink-0">
+                  <Image src="/icons/bell.png" alt="Bell Icon" fill className="object-contain" />
+                </div>
+              </div>
+              <div className="w-full">
+                <WeeklyUpdateModal triggerClassName="flex items-center justify-start gap-1.5 text-slate-900 text-[13px] font-bold underline underline-offset-4 hover:opacity-70 transition-all">
+                  Get Weekly Updates
+                  <Image src="/icons/right-arrow-svgrepo-com.svg" alt="Right Arrow" width={14} height={14} />
+                </WeeklyUpdateModal>
+              </div>
+            </div>
           </div>
         </div>
       </div>

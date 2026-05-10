@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { VocabularyAccordion } from '@/components/vocab/VocabularyAccordion'
+import { NoContentFeature } from '@/components/NoContentFeature'
 
 export default async function WordlistDetailPage({ params }: { params: Promise<{ wordlistId: string }> | { wordlistId: string } }) {
   const resolvedParams = await params;
@@ -20,6 +21,10 @@ export default async function WordlistDetailPage({ params }: { params: Promise<{
 
   if (!wordlist) {
     notFound()
+  }
+
+  if (wordlist.vocabularies.length === 0) {
+    return <NoContentFeature backHref="/vocab" />
   }
 
   return (
@@ -41,11 +46,6 @@ export default async function WordlistDetailPage({ params }: { params: Promise<{
           {wordlist.vocabularies.map(vocab => (
             <VocabularyAccordion key={vocab.id} vocab={vocab} />
           ))}
-          {wordlist.vocabularies.length === 0 && (
-            <div className="bg-white rounded-xl border border-dashed border-gray-300 p-10 flex text-center justify-center text-gray-500">
-              No words have been added to this list yet.
-            </div>
-          )}
         </div>
       </div>
 
@@ -73,9 +73,9 @@ export default async function WordlistDetailPage({ params }: { params: Promise<{
             <Link href={`/vocab/${wordlist.id}/quiz`} className="flex w-full items-center justify-center rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors">
               Quick Quiz
             </Link>
-            <button className="flex w-full items-center justify-center rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors">
+            <Link href={`/vocab/${wordlist.id}/paraphrase`} className="flex w-full items-center justify-center rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors">
               Practice Paraphrase
-            </button>
+            </Link>
           </div>
         </div>
       </div>

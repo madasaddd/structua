@@ -92,6 +92,30 @@ export default function AdminSidebar({ weeks, vocabCategories = [] }: { weeks: S
             </svg>
             <span className="text-[10px] font-bold">AI</span>
           </Link>
+
+          <div className="mt-auto mb-4 flex flex-col items-center gap-2">
+            <a 
+              href="https://docs.google.com/forms/d/1UYKmrZ9JmIWEyBwZ12HUcHx4XXg8tqkySijKFRG-FJY/edit#responses" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-14 items-center justify-center p-2 rounded-xl flex flex-col gap-1 transition-colors text-gray-500 hover:bg-gray-50"
+            >
+              <svg className="w-6 h-6 mb-0.5" fill="currentColor" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6.5,25.5v4c0.016,2.812,1.344,2.375,2.328,1.531L14.5,25.91v2.59c0,2.43,0.56,3,3,3h9c0,0,5.209,6.125,5.25,6.084 c0.75,0.916,2.781,0.604,2.75-1.084v-5h3c2.45,0,3-0.609,3-3v-15c0-2.4-0.59-3-3-3h-10v-2c0-2.47-0.46-3-3-3h-21c-2.36,0-3,0.51-3,3 v13c0,2.439,0.55,4,3,4H6.5z M31.5,28.5v4.721l-4-4.721h-9c-0.75,0-1-0.27-1-1v-13c0-0.67,0.31-1,1-1h18c0.689,0,1,0.37,1,0.94V27.5 c0,0.721-0.359,1-1,1H31.5z"/>
+              </svg>
+              <span className="text-[9px] font-bold">Feedback</span>
+            </a>
+            
+            <a 
+              href="https://docs.google.com/spreadsheets/d/1hWRNA9zgwd6ELhnzq-rfLsYKtzrLD92cswVUeZGGbLY/edit?usp=sharing" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-14 items-center justify-center p-2 rounded-xl flex flex-col gap-1 transition-colors text-gray-500 hover:bg-gray-50"
+            >
+              <svg className="w-6 h-6 mb-0.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M2.272 6.365C2 6.9 2 7.6 2 9v6c0 1.4 0 2.1.272 2.635a2.5 2.5 0 0 0 1.093 1.092C3.9 19 4.6 19 6 19h12c1.4 0 2.1 0 2.635-.273a2.5 2.5 0 0 0 1.092-1.092C22 17.1 22 16.4 22 15V9c0-1.4 0-2.1-.273-2.635a2.5 2.5 0 0 0-1.092-1.093C20.1 5 19.4 5 18 5H6c-1.4 0-2.1 0-2.635.272a2.5 2.5 0 0 0-1.093 1.093zM4.647 7h14.706a.5.5 0 0 1 .278.916l-7.075 4.732a1 1 0 0 1-1.112 0L4.369 7.916A.5.5 0 0 1 4.647 7z" fill="currentColor"/></svg>
+              <span className="text-[9px] font-bold">Subscribe</span>
+            </a>
+          </div>
         </div>
 
         {/* Pillar 2 */}

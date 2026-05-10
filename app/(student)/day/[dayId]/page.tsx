@@ -5,6 +5,7 @@ import BlockRenderer from '@/components/blocks/BlockRenderer'
 import BlockErrorBoundary from '@/components/blocks/BlockErrorBoundary'
 import DayNav, { type DayNavItem } from '@/components/DayNav'
 import { getDayWithGlobalIndex } from '@/lib/utils/indexing'
+import { NoContentFeature } from '@/components/NoContentFeature'
 
 /* ───────────────── SEO Metadata ───────────────── */
 type PageProps = { params: Promise<{ dayId: string }> }
@@ -59,9 +60,13 @@ export default async function DayPage({ params }: PageProps) {
     }),
   ])
 
-  // Only allow viewing published days
-  if (!day || !day.isPublished) {
+  // Show No Content page for unpublished days
+  if (!day) {
     notFound()
+  }
+  
+  if (!day.isPublished) {
+    return <NoContentFeature backHref="/day/1" />
   }
 
   // Compute prev/next published days from the flat ordered list
