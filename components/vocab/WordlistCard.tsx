@@ -40,7 +40,7 @@ export function WordlistCard({
             href={`/vocab/${wordlist.id}`}
             className="flex w-full items-center justify-center rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors"
           >
-            See Vocabularies
+            Learn Vocabularies
           </Link>
         </div>
       </div>

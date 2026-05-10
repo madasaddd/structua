@@ -125,6 +125,7 @@ model Wordlist {
   orderIndex    Int          @map("order_index")
   vocabularies  Vocabulary[]
   discoveryTask DiscoveryTask?
+  quizTask      QuizTask?
 
   category      VocabCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
@@ -141,8 +142,10 @@ model Vocabulary {
   defEng        String        @map("def_eng")
   collocations  Collocation[]
   wordFamilies  WordFamily[]
+  quizQuestions QuizQuestion[]
 
   wordlist      Wordlist      @relation(fields: [wordlistId], references: [id], onDelete: Cascade)
+
 
   @@map("vocabularies")
 }
@@ -224,4 +227,49 @@ model DiscoveryQuestion {
 
   option         ParagraphOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
   @@map("discovery_questions")
+}
+
+model QuizTask {
+  id         String @id @default(uuid())
+  wordlistId String @unique @map("wordlist_id") // 1-to-1 with Wordlist
+  
+  instructions QuizInstruction[]
+  groups       QuizGroup[]
+
+  wordlist   Wordlist @relation(fields: [wordlistId], references: [id], onDelete: Cascade)
+  @@map("quiz_tasks")
+}
+
+model QuizInstruction {
+  id           String @id @default(uuid())
+  taskId       String @map("task_id")
+  questionType String @map("question_type")
+  instruction  String @db.Text
+
+  task         QuizTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  @@map("quiz_instructions")
+}
+
+model QuizGroup {
+  id         String @id @default(uuid())
+  taskId     String @map("task_id")
+  orderIndex Int    @map("order_index")
+  
+  questions  QuizQuestion[]
+
+  task       QuizTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  @@map("quiz_groups")
+}
+
+model QuizQuestion {
+  id             String @id @default(uuid())
+  groupId        String @map("group_id")
+  orderIndex     Int    @map("order_index")
+  questionType   String @map("question_type")
+  questionText   String @map("question_text") @db.Text
+  targetVocabId  String? @map("target_vocab_id")
+
+  group          QuizGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  targetVocab    Vocabulary? @relation(fields: [targetVocabId], references: [id], onDelete: SetNull)
+  @@map("quiz_questions")
 }

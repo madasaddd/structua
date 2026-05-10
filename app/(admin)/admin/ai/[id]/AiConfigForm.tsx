@@ -81,8 +81,16 @@ export default function AiConfigForm({ initialData, configId }: { initialData: A
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [isEditing])
 
-  const defaultName = configId === 'grammar' ? 'Grammar Config' : 'Discovery Config'
-
+  const defaultNames: Record<string, string> = {
+    'grammar': 'Grammar Config',
+    'vocab-discovery': 'Discovery Config',
+    'vocab-quiz-cloze': 'Quiz - Cloze test',
+    'vocab-quiz-collocation': 'Quiz - Collocation matching',
+    'vocab-quiz-morphology': 'Quiz - Word mapping (Morphology)',
+    'vocab-quiz-pushed': 'Quiz - Pushed Output',
+    'vocab-quiz': 'Quiz Config' // Fallback for old ones
+  }
+  const defaultName = defaultNames[configId] || 'AI Config'
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -130,7 +138,7 @@ export default function AiConfigForm({ initialData, configId }: { initialData: A
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type: configId === 'grammar' ? 'grammar' : 'vocab-discovery',
+          type: configId,
           name: initialData?.name || defaultName,
           baseUrl,
           apiKey,

@@ -5,12 +5,7 @@ export default async function EditAiConfigPage({ params }: { params: Promise<{ i
   const resolvedParams = await params
   const configId = resolvedParams.id
   
-  const typeMapping: Record<string, string> = {
-    'grammar': 'grammar',
-    'vocab-discovery': 'vocab-discovery'
-  }
-
-  const type = typeMapping[configId] || configId
+  const type = configId
 
   const config = await prisma.aiConfig.findFirst({
     where: { type }

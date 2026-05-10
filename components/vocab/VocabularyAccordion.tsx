@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Prisma } from '@prisma/client'
+import type { Prisma } from '@prisma/client'
 
 type VocabWithDetails = Prisma.VocabularyGetPayload<{
   include: { collocations: true; wordFamilies: true }

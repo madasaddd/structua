@@ -70,14 +70,11 @@ export default async function WordlistDetailPage({ params }: { params: Promise<{
             <Link href={`/vocab/${wordlist.id}/discovery`} className="flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors">
               Discover Vocabularies
             </Link>
+            <Link href={`/vocab/${wordlist.id}/quiz`} className="flex w-full items-center justify-center rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors">
+              Quick Quiz
+            </Link>
             <button className="flex w-full items-center justify-center rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors">
-              Flash Card
-            </button>
-            <button className="flex w-full items-center justify-center rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors">
-              Practice 3
-            </button>
-            <button className="flex w-full items-center justify-center rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors">
-              Review
+              Practice Paraphrase
             </button>
           </div>
         </div>

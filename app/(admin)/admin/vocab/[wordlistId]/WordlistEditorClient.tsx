@@ -211,7 +211,9 @@ export default function WordlistEditorClient({ wordlist, activeTab = 'vocab', on
           <div className="flex items-center gap-6 border-b border-gray-200 mt-2 mb-6">
              <button onClick={() => onTabChange?.('vocab')} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'vocab' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Vocabularies list</button>
              <button onClick={() => onTabChange?.('discovery')} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'discovery' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Discovery</button>
-             <button className="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 cursor-not-allowed">Flashcard</button>
+             <button onClick={() => onTabChange?.('quiz')} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'quiz' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Quiz</button>
+             <button className="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 cursor-not-allowed">Tab 1</button>
+             <button className="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 cursor-not-allowed">Tab 2</button>
           </div>
 
           {/* Form List */}
