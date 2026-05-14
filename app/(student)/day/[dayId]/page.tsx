@@ -15,15 +15,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const id = parseInt(dayId, 10)
   if (isNaN(id)) return { title: 'Not Found — Structua' }
 
-  const [day, globalIndex] = await Promise.all([
-    prisma.day.findUnique({
-      where: { id },
-      include: { week: true },
-    }),
-    getDayWithGlobalIndex(id),
-  ])
+  // Lightweight metadata query — only fetches what SEO needs
+  const day = await prisma.day.findUnique({
+    where: { id },
+    select: { lessonTitle: true, week: { select: { order: true, themeTitle: true } } },
+  })
 
   if (!day) return { title: 'Not Found — Structua' }
+
+  // getDayWithGlobalIndex is 2 queries but runs separately from the page body
+  const globalIndex = await getDayWithGlobalIndex(id)
 
   return {
     title: `Day ${globalIndex}: ${day.lessonTitle} — Structua`,
@@ -36,56 +37,47 @@ export default async function DayPage({ params }: PageProps) {
   const { dayId: dayIdParam } = await params
   const dayId = parseInt(dayIdParam, 10)
 
-  if (isNaN(dayId)) {
-    notFound()
-  }
+  if (isNaN(dayId)) notFound()
 
-  // Fetch the day (with blocks) and published neighbour days in parallel
+  // Single parallel batch — fetch everything the page needs at once
   const [day, globalIndex, publishedDays] = await Promise.all([
     prisma.day.findUnique({
       where: { id: dayId },
       include: {
         week: true,
-        blocks: {
-          orderBy: { orderIndex: 'asc' },
-        },
+        blocks: { orderBy: { orderIndex: 'asc' } },
       },
     }),
     getDayWithGlobalIndex(dayId),
-    // Fetch only the minimal columns needed for prev/next navigation
+    // Include lessonTitle here so buildNavItem needs NO extra queries
     prisma.day.findMany({
       where: { isPublished: true },
-      select: { id: true, order: true, weekId: true },
+      select: { id: true, order: true, weekId: true, lessonTitle: true },
       orderBy: [{ week: { order: 'asc' } }, { order: 'asc' }],
     }),
   ])
 
-  // Show No Content page for unpublished days
-  if (!day) {
-    notFound()
-  }
-  
-  if (!day.isPublished) {
-    return <NoContentFeature backHref="/day/1" />
-  }
+  if (!day) notFound()
+  if (!day.isPublished) return <NoContentFeature backHref="/day/1" />
 
-  // Compute prev/next published days from the flat ordered list
   const currentIndex = publishedDays.findIndex((d) => d.id === dayId)
+  const prevRaw = currentIndex > 0 ? publishedDays[currentIndex - 1] : undefined
+  const nextRaw = currentIndex !== -1 && currentIndex < publishedDays.length - 1
+    ? publishedDays[currentIndex + 1]
+    : undefined
 
-  // Build lightweight DayNavItem objects for prev/next
-  async function buildNavItem(d: { id: number; order: number; weekId: number } | undefined): Promise<DayNavItem | null> {
-    if (!d) return null
-    const [navGlobal, navDay] = await Promise.all([
-      getDayWithGlobalIndex(d.id),
-      prisma.day.findUnique({ where: { id: d.id }, select: { lessonTitle: true } }),
-    ])
-    return navDay ? { id: d.id, globalDayIndex: navGlobal, lessonTitle: navDay.lessonTitle } : null
-  }
-
-  const [prevDay, nextDay] = await Promise.all([
-    buildNavItem(currentIndex > 0 ? publishedDays[currentIndex - 1] : undefined),
-    buildNavItem(currentIndex !== -1 && currentIndex < publishedDays.length - 1 ? publishedDays[currentIndex + 1] : undefined),
+  // Compute global indexes for prev/next in parallel — no extra DB fetches for titles
+  const [prevGlobal, nextGlobal] = await Promise.all([
+    prevRaw ? getDayWithGlobalIndex(prevRaw.id) : Promise.resolve(null),
+    nextRaw ? getDayWithGlobalIndex(nextRaw.id) : Promise.resolve(null),
   ])
+
+  const prevDay: DayNavItem | null = prevRaw && prevGlobal !== null
+    ? { id: prevRaw.id, globalDayIndex: prevGlobal, lessonTitle: prevRaw.lessonTitle }
+    : null
+  const nextDay: DayNavItem | null = nextRaw && nextGlobal !== null
+    ? { id: nextRaw.id, globalDayIndex: nextGlobal, lessonTitle: nextRaw.lessonTitle }
+    : null
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
@@ -117,7 +109,6 @@ export default async function DayPage({ params }: PageProps) {
 
         <div className="prose prose-blue max-w-none">
           {day.blocks.length === 0 ? (
-            /* Empty State */
             <div className="flex flex-col items-center justify-center py-20 text-center animate-fadeIn">
               <div className="mb-4 text-5xl">📖</div>
               <h2 className="text-xl font-bold text-gray-400">No content yet</h2>

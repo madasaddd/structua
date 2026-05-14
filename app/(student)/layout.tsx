@@ -1,39 +1,46 @@
 import StudentShell from '@/components/StudentShell'
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-
-export const dynamic = 'force-dynamic'
-
+import { unstable_cache } from 'next/cache'
 import { calculateGlobalIndexes } from '@/lib/utils/indexing'
+
+// Cache sidebar data for 60 seconds — sidebar only changes when admin publishes content
+const getSidebarData = unstable_cache(
+  async () => {
+    const [rawWeeks, vocabCategories, wordlists] = await Promise.all([
+      prisma.week.findMany({
+        select: {
+          id: true,
+          order: true,
+          themeTitle: true,
+          days: {
+            select: { id: true, order: true, lessonTitle: true, isPublished: true },
+            orderBy: { order: 'asc' as const },
+          },
+        },
+        orderBy: { order: 'asc' as const },
+      }),
+      prisma.vocabCategory.findMany({
+        orderBy: { orderIndex: 'asc' }
+      }),
+      prisma.wordlist.findMany({
+        select: { id: true, categoryId: true }
+      }),
+    ])
+    return { rawWeeks, vocabCategories, wordlists }
+  },
+  ['student-sidebar'],
+  { revalidate: 60, tags: ['sidebar'] }
+)
 
 export default async function StudentLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const rawWeeks = await prisma.week.findMany({
-    select: {
-      id: true,
-      order: true,
-      themeTitle: true,
-      days: {
-        select: { id: true, order: true, lessonTitle: true, isPublished: true },
-        orderBy: { order: 'asc' as const },
-      },
-    },
-    orderBy: { order: 'asc' as const },
-  })
+  const { rawWeeks, vocabCategories, wordlists } = await getSidebarData()
 
   const weeks = calculateGlobalIndexes(rawWeeks) as unknown as import('@/components/Sidebar').SidebarWeek[]
 
-  const vocabCategories = await prisma.vocabCategory.findMany({
-    orderBy: { orderIndex: 'asc' }
-  })
-
-  // Build a map of wordlistId -> categoryId so the sidebar can highlight the active category
-  const wordlists = await prisma.wordlist.findMany({
-    select: { id: true, categoryId: true }
-  })
   const wordlistCategoryMap: Record<string, string> = {}
   for (const wl of wordlists) {
     wordlistCategoryMap[wl.id] = wl.categoryId
