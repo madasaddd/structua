@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Sidebar, { SidebarWeek } from '@/components/Sidebar'
-import { NavigationProgressBar } from '@/components/NavigationProgressBar'
 
 export default function StudentShell({
   weeks,
@@ -19,7 +18,6 @@ export default function StudentShell({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <NavigationProgressBar />
       <Sidebar weeks={weeks} vocabCategories={vocabCategories} wordlistCategoryMap={wordlistCategoryMap} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
