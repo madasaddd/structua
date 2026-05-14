@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { WeeklyUpdateModal } from '@/components/WeeklyUpdateModal'
+import { startNavigationProgress } from '@/components/NavigationProgressBar'
 
 export type SidebarDay = {
   id: number
@@ -128,6 +129,7 @@ export default function Sidebar({
     if (isOnWordlistPage) {
       setConfirmDialog({ show: true, href })
     } else {
+      startNavigationProgress()
       router.push(href)
     }
   }, [isOnWordlistPage, router])
@@ -135,6 +137,7 @@ export default function Sidebar({
   const confirmNavigation = () => {
     const href = confirmDialog.href
     setConfirmDialog({ show: false, href: '' })
+    startNavigationProgress()
     router.push(href)
   }
 
@@ -256,7 +259,7 @@ export default function Sidebar({
                             const isActive = day.id === activeDayId
                             return (
                               <li key={day.id}>
-                                <Link href={`/day/${day.id}`} onClick={() => onClose?.()} className={`flex items-center rounded-lg px-2 py-2 text-[13px] transition-all ${isActive ? 'bg-[#EFF3FC] font-medium text-[#221B2F]' : 'font-normal text-gray-500 hover:bg-blue-50/50'}`}>
+                                <Link href={`/day/${day.id}`} onClick={() => { startNavigationProgress(); onClose?.() }} className={`flex items-center rounded-lg px-2 py-2 text-[13px] transition-all ${isActive ? 'bg-[#EFF3FC] font-medium text-[#221B2F]' : 'font-normal text-gray-500 hover:bg-blue-50/50'}`}>
                                   {isActive ? (
                                     <svg className="mr-3 h-4 w-4 shrink-0 text-[#221B2F]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" /></svg>
                                   ) : day.isPublished ? (
