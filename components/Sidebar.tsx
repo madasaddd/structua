@@ -144,8 +144,8 @@ export default function Sidebar({
 
   const grammarHref = weeks[0]?.days[0] ? `/day/${weeks[0].days[0].id}` : '#'
 
-  // Vocab icon in Pillar 1: active only when inside a specific wordlist (not on the listing page)
-  const isVocabIconActive = isOnWordlistPage
+  // Vocab icon: active on any /vocab route
+  const isVocabIconActive = isVocab
   // Grammar icon: active when not in any vocab route
   const isGrammarIconActive = !isVocab
 
