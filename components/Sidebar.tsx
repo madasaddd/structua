@@ -128,13 +128,19 @@ export default function Sidebar({
     if (isOnWordlistPage) {
       setConfirmDialog({ show: true, href })
     } else {
+      if (href !== pathname) {
+        window.dispatchEvent(new Event('loading-start'))
+      }
       router.push(href)
     }
-  }, [isOnWordlistPage, router])
+  }, [isOnWordlistPage, pathname, router])
 
   const confirmNavigation = () => {
     const href = confirmDialog.href
     setConfirmDialog({ show: false, href: '' })
+    if (href !== pathname) {
+      window.dispatchEvent(new Event('loading-start'))
+    }
     router.push(href)
   }
 
