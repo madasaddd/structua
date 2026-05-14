@@ -9,7 +9,7 @@ export default function TopNavBar() {
         </Link>
         <div className="flex items-center gap-6">
           <Link
-            href="/day/1"
+            href="/vocab"
             className="rounded-[12px] bg-[#111827] px-5 py-2 text-sm font-medium text-white transition-all hover:bg-[#3f6653]"
           >
             Learn Now

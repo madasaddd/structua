@@ -13,7 +13,7 @@ export default function SiteFooter() {
           </div>
           <div className="flex gap-6 text-sm font-medium text-gray-500">
             <Link href="https://docs.google.com/forms/d/e/1FAIpQLSefrqXuGFKGYwGW1dAPIB-UUiFpHN0gB9s_0qLnfz9AbxN3EQ/viewform" target="_blank" rel="noopener noreferrer" className="hover:text-[#111827] transition-colors">Give feedback</Link>
-            <Link href="#" className="hover:text-[#303e51] transition-colors">Contact the creator</Link>
+            <Link href="https://www.linkedin.com/in/asad-albalad/" target="_blank" rel="noopener noreferrer" className="hover:text-[#303e51] transition-colors">Contact the creator</Link>
           </div>
         </div>
       </div>

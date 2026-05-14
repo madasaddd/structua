@@ -14,7 +14,7 @@ export default function CtaSection() {
           Kuasai konstruksi kalimat kompleks dan kosakata strategis melalui kurikulum 50 hari yang terukur.
         </p>
         <Link
-          href="/day/1"
+          href="/vocab"
           className="inline-flex items-center justify-center rounded-[12px] bg-white px-8 py-3.5 text-base font-semibold text-[#111827] transition-colors hover:bg-gray-100 shadow-md"
         >
           Get Started with Structua

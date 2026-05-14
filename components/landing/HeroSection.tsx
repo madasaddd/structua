@@ -22,7 +22,7 @@ export default function HeroSection() {
         {/* CTA */}
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
-            href="/day/1"
+            href="/vocab"
             className="rounded-[12px] bg-[#111827] hover:bg-gradient-to-r hover:from-[#111827] hover:to-[#475569] px-8 py-3.5 text-base font-semibold text-white transition-all shadow-sm hover:shadow"
           >
             Belajar Sekarang &rarr;

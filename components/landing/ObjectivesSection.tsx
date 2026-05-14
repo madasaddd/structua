@@ -1,15 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from '@/components/ui/dialog'
 
 export default function ObjectivesSection() {
   return (
@@ -55,34 +46,12 @@ export default function ObjectivesSection() {
               Perluas kosakata akademik sesuai topik IELTS melalui framework kognitif yang sistematis: <em>Discover, Practice, &amp; Review</em>.
             </p>
             
-            <Dialog>
-              <DialogTrigger 
-                render={
-                  <button
-                    className="inline-flex w-fit items-center justify-center rounded-[12px] bg-[#111827] hover:bg-[#3f6653] px-6 py-2.5 text-sm font-medium text-white transition-colors"
-                  >
-                    Learn New Vocabularies
-                  </button>
-                }
-              />
-              <DialogContent className="sm:max-w-md rounded-[12px]">
-                <DialogHeader>
-                  <DialogTitle className="text-[#111827]">Fitur Belum Tersedia</DialogTitle>
-                  <DialogDescription className="text-gray-500 leading-relaxed mt-2">
-                    Wah maaf banget, fitur ini lagi development :)
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="mt-6 flex justify-end">
-                  <DialogClose 
-                    render={
-                      <button className="rounded-[12px] bg-[#111827] hover:bg-[#3f6653] px-5 py-2 text-sm font-medium text-white transition-colors">
-                        ok, mengerti
-                      </button>
-                    } 
-                  />
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Link
+              href="/vocab"
+              className="inline-flex w-fit items-center justify-center rounded-[12px] bg-[#111827] hover:bg-[#3f6653] px-6 py-2.5 text-sm font-medium text-white transition-colors"
+            >
+              Learn New Vocabularies
+            </Link>
           </div>
 
         </div>
