@@ -16,7 +16,7 @@ export default function LandingPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-6 pt-12 pb-32 flex flex-col gap-12">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-6 pt-12 pb-48 flex flex-col gap-12">
         {/* Top Text Section */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16 mt-8">
           <h1 className="flex-1 text-[56px] leading-[1.2] tracking-[-1px] font-bold text-left">
