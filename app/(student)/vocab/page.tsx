@@ -30,10 +30,10 @@ export default async function VocabStudentPage() {
       <div className="space-y-16">
         {categories.map((category) => (
           <section key={category.id} id={`category-${category.id}`} className="scroll-mt-12">
-            <h2 className="text-2xl font-bold text-slate-700 mb-6 border-b pb-2">
+            <h2 className="text-2xl font-bold text-[#222631] mb-6">
               {category.name}
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-4">
               {category.wordlists.map((wordlist) => (
                 <WordlistCard key={wordlist.id} wordlist={wordlist} category={category} />
               ))}

@@ -16,6 +16,7 @@ type CategoryType = {
   id: string
   name: string
   orderIndex: number
+  labelColor: string | null
   wordlists: WordlistType[]
 }
 
@@ -33,6 +34,7 @@ export default function AdminVocabDashboardClient({ initialCategories }: { initi
   
   // Form states
   const [categoryName, setCategoryName] = useState('')
+  const [categoryLabelColor, setCategoryLabelColor] = useState('')
   const [wordlistTitle, setWordlistTitle] = useState('')
   const [wordlistDesc, setWordlistDesc] = useState('')
 
@@ -47,26 +49,36 @@ export default function AdminVocabDashboardClient({ initialCategories }: { initi
       const res = await fetch('/api/vocab', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'UPDATE_CATEGORY', payload: { id: editingCategory.id, name: categoryName } })
+        body: JSON.stringify({ action: 'UPDATE_CATEGORY', payload: { id: editingCategory.id, name: categoryName, labelColor: categoryLabelColor } })
       })
       if (res.ok) {
-        setCategories(categories.map(c => c.id === editingCategory.id ? { ...c, name: categoryName } : c))
+        setCategories(categories.map(c => c.id === editingCategory.id ? { ...c, name: categoryName, labelColor: categoryLabelColor || null } : c))
+        setCategoryModalOpen(false)
+        setCategoryName('')
+        setCategoryLabelColor('')
+        setEditingCategory(null)
+      } else {
+        const errData = await res.json().catch(() => ({}))
+        alert(`Failed to update category: ${errData.error || res.statusText || 'Unknown error'}`)
       }
     } else {
       const res = await fetch('/api/vocab', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'CREATE_CATEGORY', payload: { name: categoryName } })
+        body: JSON.stringify({ action: 'CREATE_CATEGORY', payload: { name: categoryName, labelColor: categoryLabelColor } })
       })
       if (res.ok) {
         const newCat = await res.json()
         setCategories([...categories, { ...newCat, wordlists: [] }])
+        setCategoryModalOpen(false)
+        setCategoryName('')
+        setCategoryLabelColor('')
+        setEditingCategory(null)
+      } else {
+        const errData = await res.json().catch(() => ({}))
+        alert(`Failed to create category: ${errData.error || res.statusText || 'Unknown error'}`)
       }
     }
-    
-    setCategoryModalOpen(false)
-    setCategoryName('')
-    setEditingCategory(null)
   }
 
   const handleSaveWordlist = async () => {
@@ -86,12 +98,14 @@ export default function AdminVocabDashboardClient({ initialCategories }: { initi
         }
         return c
       }))
+      setWordlistModalOpen(false)
+      setWordlistTitle('')
+      setWordlistDesc('')
+      setActiveCategoryIdForWordlist(null)
+    } else {
+      const errData = await res.json().catch(() => ({}))
+      alert(`Failed to create wordlist: ${errData.error || res.statusText || 'Unknown error'}`)
     }
-    
-    setWordlistModalOpen(false)
-    setWordlistTitle('')
-    setWordlistDesc('')
-    setActiveCategoryIdForWordlist(null)
   }
 
   const handleDeleteWordlist = async (wordlistId: string, categoryId: string) => {
@@ -172,7 +186,7 @@ export default function AdminVocabDashboardClient({ initialCategories }: { initi
             </div>
             <div className="flex items-center gap-2">
               <button 
-                onClick={() => { setEditingCategory(cat); setCategoryName(cat.name); setCategoryModalOpen(true); }}
+                onClick={() => { setEditingCategory(cat); setCategoryName(cat.name); setCategoryLabelColor(cat.labelColor || ''); setCategoryModalOpen(true); }}
                 className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors bg-white shadow-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
@@ -227,7 +241,7 @@ export default function AdminVocabDashboardClient({ initialCategories }: { initi
 
       <div className="flex flex-col bg-white rounded-xl border border-dashed border-gray-300 hover:border-gray-400 transition-colors overflow-hidden mt-8">
         <button 
-          onClick={() => { setEditingCategory(null); setCategoryName(''); setCategoryModalOpen(true); }}
+          onClick={() => { setEditingCategory(null); setCategoryName(''); setCategoryLabelColor(''); setCategoryModalOpen(true); }}
           className="w-full h-full flex flex-col items-center justify-center p-8"
         >
           <span className="text-sm font-bold text-slate-800 mb-2 mt-4">That&apos;s All</span>
@@ -255,11 +269,24 @@ export default function AdminVocabDashboardClient({ initialCategories }: { initi
                     type="text" 
                     value={categoryName} 
                     onChange={e => setCategoryName(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleSaveCategory()}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" 
                     placeholder="e.g. Economy" 
                     autoFocus
                   />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Label Color (Hex)</label>
+                  <div className="flex gap-2 items-center">
+                    <input 
+                      type="text" 
+                      value={categoryLabelColor} 
+                      onChange={e => setCategoryLabelColor(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleSaveCategory()}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" 
+                      placeholder="e.g. #D3E0FB" 
+                    />
+                    <div className="w-10 h-10 rounded-lg border border-gray-200 shrink-0" style={{ backgroundColor: categoryLabelColor || '#D3E0FB' }}></div>
+                  </div>
                 </div>
               </div>
               <div className="mt-8 flex items-center gap-3">

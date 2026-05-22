@@ -24,7 +24,8 @@ export async function POST(request: Request) {
       const newCategory = await prisma.vocabCategory.create({
         data: {
           name: payload.name,
-          orderIndex: orderCount + 1
+          orderIndex: orderCount + 1,
+          labelColor: payload.labelColor || null
         }
       })
       revalidatePath('/vocab')
@@ -46,9 +47,9 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
-    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 })
+    return NextResponse.json({ error: error?.message || 'Failed to process request' }, { status: 500 })
   }
 }
 
@@ -62,7 +63,10 @@ export async function PUT(request: Request) {
     if (action === 'UPDATE_CATEGORY') {
       const updated = await prisma.vocabCategory.update({
         where: { id: payload.id },
-        data: { name: payload.name }
+        data: { 
+          name: payload.name,
+          labelColor: payload.labelColor || null
+        }
       })
       revalidatePath('/vocab')
       return NextResponse.json(updated)
@@ -92,9 +96,9 @@ export async function PUT(request: Request) {
     }
     
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
-    return NextResponse.json({ error: 'Failed' }, { status: 500 })
+    return NextResponse.json({ error: error?.message || 'Failed' }, { status: 500 })
   }
 }
 
@@ -121,8 +125,8 @@ export async function DELETE(request: Request) {
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
-    return NextResponse.json({ error: 'Failed' }, { status: 500 })
+    return NextResponse.json({ error: error?.message || 'Failed' }, { status: 500 })
   }
 }

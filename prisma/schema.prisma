@@ -111,6 +111,7 @@ model VocabCategory {
   id          String     @id @default(uuid())
   name        String
   orderIndex  Int        @map("order_index")
+  labelColor  String?    @map("label_color")
   wordlists   Wordlist[]
 
   @@map("vocab_categories")
