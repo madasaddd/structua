@@ -217,7 +217,7 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
               Read the paragraph, and get the meaning of bold vocabularies
             </p>
-            <p
+            <div
               className="text-[#334155] text-base leading-relaxed font-sans"
               dangerouslySetInnerHTML={{ __html: activeOption.content }}
             />

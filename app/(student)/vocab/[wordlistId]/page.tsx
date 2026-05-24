@@ -51,31 +51,77 @@ export default async function WordlistDetailPage({ params }: { params: Promise<{
 
       {/* Sticky Right Widget */}
       <div className="w-full lg:w-72 shrink-0">
-        <div className="sticky top-10 bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-4">
-          <div>
-            <h3 className="font-bold text-gray-900 text-base leading-tight">
-               {wordlist.title}
-            </h3>
-            {wordlist.level && (
-              <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full uppercase mt-2 inline-block">
-                {wordlist.level}
-              </span>
-            )}
-            <p className="text-sm text-gray-500 mt-2">
-              {wordlist.description || `${wordlist.vocabularies.length} vocabularies`}
-            </p>
+        <div className="sticky top-10 w-full flex flex-col gap-4">
+          <div className="w-full flex flex-col gap-1 p-1 bg-white rounded-xl shadow-md group">
+          {/* Top Container */}
+          <div 
+            className="w-full h-20 flex justify-center items-center rounded-lg relative overflow-hidden"
+            style={{
+              background: (() => {
+                const baseColor = wordlist.category?.labelColor || '#D3E0FB';
+                const isValidHex = /^#[0-9A-Fa-f]{6}$/.test(baseColor);
+                const color100 = isValidHex ? `${baseColor}33` : 'rgba(255,255,255,0)';
+                return `linear-gradient(180deg, ${baseColor} 0%, ${color100} 100%)`;
+              })()
+            }}
+          >
+            {/* Left object */}
+            <img 
+              src="/icons/wordlist-left.svg" 
+              alt="" 
+              className="absolute transition-all duration-300 ease-out opacity-0 translate-x-0 group-hover:opacity-100 group-hover:-translate-x-[52px] z-0 w-[48px] h-[64px]" 
+            />
+            {/* Right object */}
+            <img 
+              src="/icons/wordlist-right.svg" 
+              alt="" 
+              className="absolute transition-all duration-300 ease-out opacity-0 translate-x-0 group-hover:opacity-100 group-hover:translate-x-[52px] z-0 w-[50px] h-[64px]" 
+            />
+            {/* Middle object (Default) */}
+            <img 
+              src="/icons/wordlist-center.svg" 
+              alt="" 
+              className="absolute transition-all duration-300 opacity-100 group-hover:opacity-0 z-10 w-[72px] h-[64px]" 
+            />
+            {/* Middle object (Hovered) */}
+            <img 
+              src="/icons/wordlist-center-hovered.svg" 
+              alt="" 
+              className="absolute transition-all duration-300 opacity-0 group-hover:opacity-100 z-10 w-[72px] h-[64px]" 
+            />
           </div>
 
-          <div className="space-y-2 pt-4">
-            <Link href={`/vocab/${wordlist.id}/discovery`} className="flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors">
-              Discover Vocabularies
-            </Link>
-            <Link href={`/vocab/${wordlist.id}/quiz`} className="flex w-full items-center justify-center rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors">
-              Quick Quiz
-            </Link>
-            <Link href={`/vocab/${wordlist.id}/paraphrase`} className="flex w-full items-center justify-center rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors">
-              Practice Paraphrase
-            </Link>
+          {/* Bottom Container */}
+          <div className="w-full flex flex-col gap-1 p-2">
+            {/* Text container */}
+            <div className="flex w-full items-center justify-between pb-1">
+              <h3 
+                className="font-medium text-[#222631] truncate mr-2" 
+                style={{ fontFamily: 'var(--font-dm-sans), "DM Sans", sans-serif', fontSize: '16px', lineHeight: '1.32', letterSpacing: '-0.005em' }}
+              >
+                Practice!
+              </h3>
+              <p 
+                className="font-medium text-[#657084] whitespace-nowrap" 
+                style={{ fontFamily: 'var(--font-dm-sans), "DM Sans", sans-serif', fontSize: '12px', lineHeight: '1.44', letterSpacing: '-0.005em' }}
+              >
+                {wordlist.vocabularies.length} Vocabulary
+              </p>
+            </div>
+
+            {/* Button container */}
+            <div className="flex flex-col w-full gap-2">
+              <Link href={`/vocab/${wordlist.id}/discovery`} className="flex w-full items-center justify-center rounded-lg bg-white border border-[#F2F2F2] px-2 py-2.5 text-[14px] font-medium text-[#222631] hover:bg-gray-50 transition-colors" style={{ fontFamily: 'var(--font-dm-sans), "DM Sans", sans-serif' }}>
+                Discover Them
+              </Link>
+              <Link href={`/vocab/${wordlist.id}/quiz`} className="flex w-full items-center justify-center rounded-lg bg-white border border-[#F2F2F2] px-2 py-2.5 text-[14px] font-medium text-[#222631] hover:bg-gray-50 transition-colors" style={{ fontFamily: 'var(--font-dm-sans), "DM Sans", sans-serif' }}>
+                Quick Quiz
+              </Link>
+              <Link href={`/vocab/${wordlist.id}/paraphrase`} className="flex w-full items-center justify-center rounded-lg bg-white border border-[#F2F2F2] px-2 py-2.5 text-[14px] font-medium text-[#222631] hover:bg-gray-50 transition-colors" style={{ fontFamily: 'var(--font-dm-sans), "DM Sans", sans-serif' }}>
+                Practice Paraphrase
+              </Link>
+            </div>
+          </div>
           </div>
         </div>
       </div>
