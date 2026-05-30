@@ -231,7 +231,7 @@ export function WordlistCard({
           {wordlist.title}
         </h3>
         <p className="text-center font-medium text-[#657084] text-[12px] leading-[1.44] tracking-[-0.005em]">
-          {wordlist.vocabularies.length} {wordlist.vocabularies.length === 1 ? 'vocabulary' : 'vocabularies'}
+          {wordlist.vocabularies.length} Vocabulary
         </p>
 
         {/* Buttons (Animated reveal) */}

@@ -25,17 +25,28 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
   const vocabularies: any[] = wordlist.vocabularies || []
 
   const [currentParagraphIndex, setCurrentParagraphIndex] = useState(0)
-  const currentParagraph = paragraphs[currentParagraphIndex]
-
   const [activeOptionIndex, setActiveOptionIndex] = useState(0)
-  const activeOption = currentParagraph.options[activeOptionIndex]
-
+  const [isClient, setIsClient] = useState(false)
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [isEvaluating, setIsEvaluating] = useState(false)
   const [evaluationResults, setEvaluationResults] = useState<ResultItem[] | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
   const [totalDiscoveredCount, setTotalDiscoveredCount] = useState(0)
   const [showCompletionModal, setShowCompletionModal] = useState(false)
+
+  useEffect(() => {
+    if (paragraphs.length > 0) {
+      setCurrentParagraphIndex(0)
+      const firstParagraph = paragraphs[0]
+      if (firstParagraph && firstParagraph.options && firstParagraph.options.length > 0) {
+        setActiveOptionIndex(Math.floor(Math.random() * firstParagraph.options.length))
+      }
+    }
+    setIsClient(true)
+  }, [paragraphs])
+
+  const currentParagraph = paragraphs[currentParagraphIndex]
+  const activeOption = currentParagraph?.options?.[activeOptionIndex]
 
   // Lottie logic for loading and confetti
   const loadingCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -132,7 +143,12 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
     if (currentParagraphIndex < paragraphs.length - 1) {
       setEvaluationResults(null)
       setAnswers({})
-      setActiveOptionIndex(0)
+      const nextParagraph = paragraphs[currentParagraphIndex + 1]
+      if (nextParagraph && nextParagraph.options && nextParagraph.options.length > 0) {
+        setActiveOptionIndex(Math.floor(Math.random() * nextParagraph.options.length))
+      } else {
+        setActiveOptionIndex(0)
+      }
       setCurrentParagraphIndex(prev => prev + 1)
     } else {
       setShowCompletionModal(true)
@@ -166,9 +182,10 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
 
   const hasResults = evaluationResults !== null
 
+  if (!isClient) return null
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col lg:flex-row gap-8 relative font-sans">
+    <div className="relative font-sans">
 
       {/* Evaluating overlay */}
       {isEvaluating && (
@@ -189,18 +206,11 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
 
       {/* Main content */}
       <div className="flex-1 space-y-6">
-        <div>
-          <p className="text-sm text-gray-500 font-medium mb-1">[{wordlist.category.name}]</p>
-          <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">
-            Discovery – {wordlist.title}
-          </h1>
-        </div>
-
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 space-y-8">
 
           {/* Paragraph header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-900">Paragraph {currentParagraphIndex + 1}</h2>
+            <h2 className="text-sm font-medium text-gray-500">Paragraph {currentParagraphIndex + 1} of {paragraphs.length}</h2>
             {currentParagraph.options.length > 1 && !hasResults && (
               <button
                 onClick={handleRegenerate}
@@ -321,28 +331,6 @@ export default function DiscoveryClient({ wordlist }: { wordlist: any }) {
                 Check My Answer
               </button>
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* Right sidebar nav */}
-      <div className="w-full lg:w-72 shrink-0">
-        <div className="sticky top-10 bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
-          <div>
-            <h3 className="font-bold text-gray-900 text-base leading-tight">
-              {wordlist.category.name} <span className="text-gray-400 font-normal">—</span> {wordlist.title}
-            </h3>
-            <p className="text-xs text-gray-500 mt-1">{vocabularies.length} vocabularies</p>
-          </div>
-          <div className="pt-2 space-y-2">
-            {paragraphs.map((p: any, i: number) => (
-              <div
-                key={p.id}
-                className={`text-sm font-semibold transition-colors ${i === currentParagraphIndex ? 'text-slate-900' : 'text-gray-400'}`}
-              >
-                Paragraph {i + 1}
-              </div>
-            ))}
           </div>
         </div>
       </div>

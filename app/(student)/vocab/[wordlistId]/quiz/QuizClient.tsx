@@ -10,6 +10,29 @@ const QUESTION_TYPES = [
   'Pushed Output'
 ]
 
+const INSTRUCTIONS_AND_EXAMPLES: Record<string, { instruction: string, exampleQ: string, exampleA: string }> = {
+  'Cloze test': {
+    instruction: 'Complete the following sentence by filling in the blank with the appropriate IELTS vocabulary.',
+    exampleQ: 'The lack of funding is a __________ issue that needs immediate attention. (Hint: very urgent or important)',
+    exampleA: 'pressing'
+  },
+  'Collocation matching': {
+    instruction: 'Provide 3 to 5 natural collocations (common word pairings) for the following word.',
+    exampleQ: 'Role',
+    exampleA: 'pivotal role, crucial role, active role.'
+  },
+  'Word mapping (Morphology)': {
+    instruction: 'Change the base word in brackets to its correct grammatical form to fit the sentence structure.',
+    exampleQ: 'The company’s rapid growth is due to its highly [innovate] marketing strategy.',
+    exampleA: 'innovative'
+  },
+  'Pushed Output': {
+    instruction: 'Write a complete English sentence using the following word to express the specified idea.',
+    exampleQ: "Use the word 'Facilitate' to describe how a manager helps a meeting run smoothly.",
+    exampleA: 'A good manager will facilitate the meeting by ensuring everyone has a chance to speak and keeping the discussion on track.'
+  }
+}
+
 type ResultItem = {
   status: 'correct' | 'incorrect' | 'could_be_improved'
   reason: string
@@ -122,7 +145,7 @@ export default function QuizClient({ wordlist }: { wordlist: any }) {
     try {
       const currentQuestions = pages[currentPageIndex]
       const questionType = QUESTION_TYPES[currentPageIndex]
-      const instructionObj = quizTask.instructions?.find((ins: any) => ins.questionType === questionType)
+      const instructionObj = INSTRUCTIONS_AND_EXAMPLES[questionType]
       
       const payload = {
         student_submission: currentQuestions.map((q: any) => {
@@ -189,14 +212,14 @@ export default function QuizClient({ wordlist }: { wordlist: any }) {
 
   const currentQuestions = pages[currentPageIndex] || []
   const currentType = QUESTION_TYPES[currentPageIndex]
-  const instructionObj = quizTask.instructions?.find((ins: any) => ins.questionType === currentType)
+  const instructionObj = INSTRUCTIONS_AND_EXAMPLES[currentType]
   const instructionText = instructionObj?.instruction || 'Answer the questions below.'
 
   // Check if current page is already evaluated
   const isPageEvaluated = currentQuestions.every((q: any) => evaluationResults[q.id])
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col lg:flex-row gap-8 relative font-sans">
+    <div className="relative font-sans">
       {/* Evaluating overlay */}
       {isEvaluating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
@@ -216,35 +239,40 @@ export default function QuizClient({ wordlist }: { wordlist: any }) {
 
       {/* Main content */}
       <div className="flex-1 space-y-6">
-        <div>
-          <p className="text-sm text-gray-500 font-medium mb-1">[{wordlist.category.name}]</p>
-          <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">
-            Quiz – {wordlist.title}
-          </h1>
-        </div>
-
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 space-y-8">
           {/* Header */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900">
-              Question {currentPageIndex * 5 + 1}–{currentPageIndex * 5 + currentQuestions.length}
+          <div className="space-y-6">
+            <h2 className="text-sm font-medium text-gray-500">
+              Question {currentPageIndex * 5 + 1}–{currentPageIndex * 5 + currentQuestions.length} of {pages.length * 5}
             </h2>
-            <p className="font-bold text-slate-900 text-base">
-              {instructionText}
-            </p>
-            {currentType.toLowerCase().includes('cloze') && (
-              <div className="bg-gray-50 p-6 rounded-lg border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Array.from(new Set(vocabularies.map((v: any) => v.word).filter(Boolean))).sort().map((word: any, idx: number) => (
-                  <div key={idx} className="text-sm font-medium text-slate-700">
-                    {word}
-                  </div>
-                ))}
+            <div className="space-y-4">
+              <div>
+                <p className="text-slate-800 text-base font-semibold leading-relaxed">{instructionText}</p>
               </div>
-            )}
+              
+              {currentType.toLowerCase().includes('cloze') && (
+                <div className="bg-gray-50 p-6 rounded-lg border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {Array.from(new Set(vocabularies.map((v: any) => v.word).filter(Boolean))).sort().map((word: any, idx: number) => (
+                    <div key={idx} className="text-sm font-medium text-slate-700">
+                      {word}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {instructionObj && (
+                <div className="bg-gray-50 p-5 rounded-xl border border-gray-100 space-y-2">
+                  <p className="text-sm font-medium text-slate-900">Example!</p>
+                  <p className="text-sm font-medium text-slate-800">Q: {instructionObj.exampleQ}</p>
+                  <p className="text-sm font-medium text-slate-800">A: {instructionObj.exampleA}</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Questions */}
           <div className="space-y-8">
+            <p className="text-base font-semibold text-slate-800">Answer the questions below.</p>
             {isPageEvaluated && (
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
                 Results
@@ -287,7 +315,7 @@ export default function QuizClient({ wordlist }: { wordlist: any }) {
                 return (
                   <div key={q.id} className={`rounded-xl border-2 p-5 space-y-3 ${boxClass}`}>
                     <div className="flex items-start justify-between gap-4">
-                      <p className="text-sm font-semibold text-gray-700 whitespace-pre-wrap">{q.questionText}</p>
+                      <p className="text-sm font-medium text-gray-700 whitespace-pre-wrap">{currentPageIndex * 5 + i + 1}. {q.questionText}</p>
                       <div className={`shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center ${iconClass}`}>
                         {icon}
                       </div>
@@ -329,8 +357,7 @@ export default function QuizClient({ wordlist }: { wordlist: any }) {
               return (
                 <div key={q.id} className="space-y-3">
                   <div>
-                    <p className="text-sm text-gray-500 font-medium mb-1">[Question {currentPageIndex * 5 + i + 1}]</p>
-                    <p className="text-sm font-bold text-slate-900 whitespace-pre-wrap">{q.questionText}</p>
+                    <p className="text-sm font-medium text-slate-900 whitespace-pre-wrap">{currentPageIndex * 5 + i + 1}. {q.questionText}</p>
                   </div>
                   <input
                     value={answers[q.id] || ''}
@@ -362,31 +389,6 @@ export default function QuizClient({ wordlist }: { wordlist: any }) {
                 Check My Answer
               </button>
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* Right sidebar nav */}
-      <div className="w-full lg:w-72 shrink-0">
-        <div className="sticky top-10 bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
-          <div>
-            <h3 className="font-bold text-gray-900 text-base leading-tight mb-2">Quiz</h3>
-            <p className="text-xs font-semibold text-slate-800">
-              Question {currentPageIndex * 5 + 1}–{Math.min((currentPageIndex + 1) * 5, 20)}
-            </p>
-          </div>
-          <div className="pt-2 space-y-3 border-t border-gray-100">
-            {pages.map((p, i) => (
-              <div
-                key={i}
-                className={`text-sm transition-colors flex items-center gap-2 ${i === currentPageIndex ? 'text-slate-900 font-bold' : 'text-gray-400 font-medium'}`}
-              >
-                {i < currentPageIndex && (
-                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                )}
-                Question {i * 5 + 1}–{(i + 1) * 5}
-              </div>
-            ))}
           </div>
         </div>
       </div>

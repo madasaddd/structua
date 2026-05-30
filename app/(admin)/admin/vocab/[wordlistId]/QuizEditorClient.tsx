@@ -25,10 +25,9 @@ export default function QuizEditorClient({ wordlist, activeTab, onTabChange }: {
   const [lastSaved, setLastSaved] = useState<string | null>(null)
   
   const [csvUploadGlobal, setCsvUploadGlobal] = useState(false)
-  const [csvUploadInstructions, setCsvUploadInstructions] = useState(false)
   const [csvUploadGroupId, setCsvUploadGroupId] = useState<number | null>(null)
   
-  const [instructions, setInstructions] = useState<EditQuizInstruction[]>([])
+  const [groups, setGroups] = useState<EditQuizGroup[]>([])
   const [groups, setGroups] = useState<EditQuizGroup[]>([])
   const vocabularies = wordlist.vocabularies || []
 
@@ -37,16 +36,7 @@ export default function QuizEditorClient({ wordlist, activeTab, onTabChange }: {
     fetch(`/api/vocab/${wordlist.id}/quiz`)
       .then(res => res.json())
       .then(data => {
-        // Merge fetched instructions with default QUESTION_TYPES to ensure all 4 types always appear
-        const mergedInstructions = QUESTION_TYPES.map(type => {
-          const existing = data.instructions?.find((ins: any) => ins.questionType === type)
-          return {
-            id: existing?.id || generateId(),
-            questionType: type,
-            instruction: existing?.instruction || ''
-          }
-        })
-        setInstructions(mergedInstructions)
+        // Merging logic removed as instructions are now hardcoded
         
         if (data.groups && data.groups.length > 0) {
           setGroups(data.groups.sort((a: any, b: any) => a.orderIndex - b.orderIndex).map((g: any) => ({
@@ -80,24 +70,7 @@ export default function QuizEditorClient({ wordlist, activeTab, onTabChange }: {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [groups])
 
-  const handleSaveInstructions = async () => {
-    setIsSavingInstructions(true)
-    try {
-      const res = await fetch(`/api/vocab/${wordlist.id}/quiz`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'SAVE_INSTRUCTIONS', payload: { instructions } })
-      })
-      if (!res.ok) throw new Error('Failed to save instructions')
-      setLastSaved(new Date().toLocaleString())
-      alert('Instructions saved successfully!')
-      router.refresh()
-    } catch (err) {
-      alert('Failed to save Instructions')
-    } finally {
-      setIsSavingInstructions(false)
-    }
-  }
+
 
   const handleSaveGroup = async (gIdx: number) => {
     const group = groups[gIdx]
@@ -197,31 +170,7 @@ export default function QuizEditorClient({ wordlist, activeTab, onTabChange }: {
     })
   }
 
-  const handleInstructionsCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const data = results.data as any[]
-        const newInsts = QUESTION_TYPES.map(type => {
-          // Case-insensitive matching for CSV upload
-          const row = data.find(r => (r.question_type || '').toLowerCase().trim() === type.toLowerCase().trim())
-          const existing = instructions.find(ins => ins.questionType === type)
-          return {
-            id: existing?.id || generateId(),
-            questionType: type,
-            instruction: row ? row.instruction : (existing?.instruction || '')
-          }
-        })
-        setInstructions(newInsts)
-        setCsvUploadInstructions(false)
-        alert('Instructions uploaded! Please click "Save Instructions".')
-      },
-      error: (err) => alert('Failed to parse CSV: ' + err.message)
-    })
-  }
+
 
   const handleCsvUpload = (gIdx: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -252,11 +201,7 @@ export default function QuizEditorClient({ wordlist, activeTab, onTabChange }: {
     })
   }
 
-  const updateInstruction = (idx: number, text: string) => {
-    const newInst = [...instructions]
-    newInst[idx].instruction = text
-    setInstructions(newInst)
-  }
+
 
   const addQuestion = (gIdx: number) => {
     const newGroups = [...groups]
@@ -304,16 +249,7 @@ export default function QuizEditorClient({ wordlist, activeTab, onTabChange }: {
     URL.revokeObjectURL(url)
   }
 
-  const downloadInstructionsTemplate = () => {
-    const headers = 'question_type,instruction\n'
-    const blob = new Blob([headers], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'structua_quiz_instructions_template.csv'
-    a.click()
-    URL.revokeObjectURL(url)
-  }
+
 
   return (
     <div className="flex h-full max-h-screen overflow-hidden bg-gray-50/50">
@@ -323,7 +259,7 @@ export default function QuizEditorClient({ wordlist, activeTab, onTabChange }: {
           <div className="flex items-center justify-between pb-1">
             <div>
               <Link href="/admin/vocab" className="text-sm font-medium text-blue-600 hover:text-blue-700 mb-3 inline-block">← Back to Dashboard</Link>
-              <p className="text-sm text-gray-500 font-medium mb-1">[{wordlist.category.name}]</p>
+              <p className="text-sm text-gray-500 font-medium mb-1">{wordlist.category.name}</p>
               <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Quiz – {wordlist.title}</h1>
             </div>
           </div>
@@ -333,53 +269,10 @@ export default function QuizEditorClient({ wordlist, activeTab, onTabChange }: {
              <button onClick={() => onTabChange('vocab')} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'vocab' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Vocabularies list</button>
              <button onClick={() => onTabChange('discovery')} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'discovery' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Discovery</button>
              <button onClick={() => onTabChange('quiz')} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'quiz' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Quiz</button>
-             <button className="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 cursor-not-allowed">Tab 1</button>
-             <button className="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 cursor-not-allowed">Tab 2</button>
+             <button onClick={() => onTabChange('paraphrase')} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'paraphrase' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Paraphrase</button>
           </div>
 
-          {/* Instructions Section */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-slate-900">Instructions</h2>
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => setCsvUploadInstructions(true)}
-                  className="text-xs font-semibold text-gray-700 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" /></svg>
-                  Upload CSV
-                </button>
-              </div>
-            </div>
-            <div className="space-y-4">
-              {instructions.map((inst, idx) => (
-                <div key={inst.id} className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-                  <div className="col-span-1">
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Type</label>
-                    <div className="text-sm font-semibold text-slate-800 py-2">{inst.questionType}</div>
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Instruction</label>
-                    <input 
-                      value={inst.instruction}
-                      onChange={(e) => updateInstruction(idx, e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none bg-white"
-                      placeholder="E.g., Fill in the blank with the appropriate word"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-end pt-4 mt-4 border-t border-gray-100">
-              <button 
-                onClick={handleSaveInstructions}
-                disabled={isSavingInstructions}
-                className="px-5 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg shadow-sm hover:bg-slate-800 disabled:opacity-50"
-              >
-                {isSavingInstructions ? 'Saving...' : 'Save Instructions'}
-              </button>
-            </div>
-          </div>
+
 
           {/* Groups List */}
           <div className="space-y-8">
@@ -530,37 +423,6 @@ export default function QuizEditorClient({ wordlist, activeTab, onTabChange }: {
          </div>
       </div>
 
-      {/* CSV Upload Modal for Instructions */}
-      {csvUploadInstructions && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden border border-gray-100">
-             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-               <h3 className="font-bold text-gray-900 text-lg">Upload CSV for Instructions</h3>
-               <button onClick={() => setCsvUploadInstructions(false)} className="text-gray-400 hover:text-gray-600">
-                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-               </button>
-             </div>
-             <div className="p-6 space-y-4">
-               <div>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Upload a CSV file to automatically populate instructions.
-                  </p>
-                  <button 
-                     onClick={downloadInstructionsTemplate}
-                     className="mb-6 inline-flex items-center gap-2 px-4 py-2 border border-blue-200 text-blue-700 bg-blue-50 text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-100"
-                  >
-                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4-4m4 4V4" /></svg>
-                     Download CSV Template
-                  </button>
-                  <div className="border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors rounded-xl p-10 flex flex-col items-center justify-center bg-gray-50/50 relative">
-                     <input type="file" accept=".csv" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleInstructionsCsvUpload} />
-                     <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" /></svg>
-                     <span className="text-sm font-semibold text-slate-900 pointer-events-none">Click or drag CSV here</span>
-                  </div>
-               </div>
-             </div>
-          </div>
-        </div>
       )}
 
       {/* CSV Upload Modal for Single Group */}

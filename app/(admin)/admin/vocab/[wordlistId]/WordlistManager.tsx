@@ -4,6 +4,7 @@ import { useState } from 'react'
 import WordlistEditorClient from './WordlistEditorClient'
 import DiscoveryEditorClient from './DiscoveryEditorClient'
 import QuizEditorClient from './QuizEditorClient'
+import ParaphraseEditorClient from './ParaphraseEditorClient'
 
 export default function WordlistManager({ wordlist }: { wordlist: any }) {
   const [activeTab, setActiveTab] = useState('vocab')
@@ -18,6 +19,10 @@ export default function WordlistManager({ wordlist }: { wordlist: any }) {
 
   if (activeTab === 'quiz') {
     return <QuizEditorClient wordlist={wordlist} activeTab={activeTab} onTabChange={setActiveTab} />
+  }
+
+  if (activeTab === 'paraphrase') {
+    return <ParaphraseEditorClient wordlist={wordlist} activeTab={activeTab} onTabChange={setActiveTab} />
   }
 
   return null

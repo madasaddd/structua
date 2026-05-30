@@ -88,7 +88,8 @@ export default function AiConfigForm({ initialData, configId }: { initialData: A
     'vocab-quiz-collocation': 'Quiz - Collocation matching',
     'vocab-quiz-morphology': 'Quiz - Word mapping (Morphology)',
     'vocab-quiz-pushed': 'Quiz - Pushed Output',
-    'vocab-quiz': 'Quiz Config' // Fallback for old ones
+    'vocab-quiz': 'Quiz Config', // Fallback for old ones
+    'vocab-paraphrase': 'Practice Paraphrase Config'
   }
   const defaultName = defaultNames[configId] || 'AI Config'
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

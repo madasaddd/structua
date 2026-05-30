@@ -230,7 +230,7 @@ export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange
           <div className="flex items-center justify-between pb-1">
             <div>
               <Link href="/admin/vocab" className="text-sm font-medium text-blue-600 hover:text-blue-700 mb-3 inline-block">← Back to Dashboard</Link>
-              <p className="text-sm text-gray-500 font-medium mb-1">[{wordlist.category.name}]</p>
+              <p className="text-sm text-gray-500 font-medium mb-1">{wordlist.category.name}</p>
               <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Discovery – {wordlist.title}</h1>
             </div>
           </div>
@@ -240,8 +240,7 @@ export default function DiscoveryEditorClient({ wordlist, activeTab, onTabChange
              <button onClick={() => onTabChange('vocab')} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'vocab' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Vocabularies list</button>
              <button onClick={() => onTabChange('discovery')} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'discovery' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Discovery</button>
              <button onClick={() => onTabChange('quiz')} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'quiz' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Quiz</button>
-             <button className="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 cursor-not-allowed">Tab 1</button>
-             <button className="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 cursor-not-allowed">Tab 2</button>
+             <button onClick={() => onTabChange('paraphrase')} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'paraphrase' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Paraphrase</button>
           </div>
 
           {/* Form List */}

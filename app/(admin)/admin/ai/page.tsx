@@ -50,7 +50,8 @@ export default async function AiConfigPage() {
               { id: 'vocab-quiz-cloze', defaultName: 'Quiz - Cloze test' },
               { id: 'vocab-quiz-collocation', defaultName: 'Quiz - Collocation matching' },
               { id: 'vocab-quiz-morphology', defaultName: 'Quiz - Word mapping (Morphology)' },
-              { id: 'vocab-quiz-pushed', defaultName: 'Quiz - Pushed Output' }
+              { id: 'vocab-quiz-pushed', defaultName: 'Quiz - Pushed Output' },
+              { id: 'vocab-paraphrase', defaultName: 'Practice Paraphrase Config' }
             ].map(typeConfig => {
               const config = configs.find(c => c.type === typeConfig.id)
               return (

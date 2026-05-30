@@ -1,9 +1,60 @@
+import { prisma } from '@/lib/prisma'
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { NoContentFeature } from '@/components/NoContentFeature'
+import ParaphraseStudentClient from './ParaphraseStudentClient'
 
 export default async function ParaphrasePage({ params }: { params: Promise<{ wordlistId: string }> | { wordlistId: string } }) {
   const resolvedParams = await params
   
-  // Practice Paraphrase feature is currently under construction.
-  // We immediately return the NoContentFeature for now.
-  return <NoContentFeature backHref={`/vocab/${resolvedParams.wordlistId}`} />
+  const wordlist = await prisma.wordlist.findUnique({
+    where: { id: resolvedParams.wordlistId },
+    include: {
+      paraphraseTask: {
+        include: {
+          paragraphs: {
+            include: {
+              vocabularies: true
+            }
+          }
+        }
+      }
+    }
+  })
+
+  if (!wordlist) {
+    notFound()
+  }
+
+  const paragraphs = wordlist.paraphraseTask?.paragraphs || []
+
+  if (paragraphs.length === 0) {
+    return <NoContentFeature backHref={`/vocab/${resolvedParams.wordlistId}`} />
+  }
+
+  return (
+    <div className="relative min-h-screen bg-gray-50/50">
+      {/* Background Gradient */}
+      <div 
+        className="absolute top-0 left-0 w-full h-[400px] pointer-events-none" 
+        style={{ background: 'linear-gradient(180deg, #D8EAFD 0%, #FFFFFF 100%)' }} 
+      />
+      
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-10">
+        {/* Header */}
+        <div className="flex items-center mb-8">
+          <Link href={`/vocab/${wordlist.id}`} className="absolute text-slate-800 hover:bg-white/50 p-2 rounded-full transition-colors">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+          </Link>
+          <div className="w-full text-center">
+            <h1 className="text-xl font-extrabold text-[#1f2937] tracking-tight">Paraphrase a paragraph.</h1>
+            <p className="text-xs text-gray-500 font-bold mt-1 uppercase tracking-wide">{wordlist.title}</p>
+          </div>
+        </div>
+
+        {/* Client Interactive Component */}
+        <ParaphraseStudentClient paragraphs={paragraphs} wordlist={wordlist} />
+      </div>
+    </div>
+  )
 }

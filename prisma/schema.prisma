@@ -127,6 +127,7 @@ model Wordlist {
   vocabularies  Vocabulary[]
   discoveryTask DiscoveryTask?
   quizTask      QuizTask?
+  paraphraseTask ParaphraseTask?
 
   category      VocabCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
@@ -144,6 +145,7 @@ model Vocabulary {
   collocations  Collocation[]
   wordFamilies  WordFamily[]
   quizQuestions QuizQuestion[]
+  paraphraseParagraphs ParaphraseParagraph[]
 
   wordlist      Wordlist      @relation(fields: [wordlistId], references: [id], onDelete: Cascade)
 
@@ -274,3 +276,25 @@ model QuizQuestion {
   targetVocab    Vocabulary? @relation(fields: [targetVocabId], references: [id], onDelete: SetNull)
   @@map("quiz_questions")
 }
+
+model ParaphraseTask {
+  id         String @id @default(uuid())
+  wordlistId String @unique @map("wordlist_id") // 1-to-1 with Wordlist
+  paragraphs ParaphraseParagraph[]
+
+  wordlist   Wordlist @relation(fields: [wordlistId], references: [id], onDelete: Cascade)
+  @@map("paraphrase_tasks")
+}
+
+model ParaphraseParagraph {
+  id           String @id @default(uuid())
+  taskId       String @map("task_id")
+  casualText   String @map("casual_text") @db.Text
+  orderIndex   Int    @map("order_index")
+  
+  vocabularies Vocabulary[] // Implicit many-to-many relation
+
+  task         ParaphraseTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  @@map("paraphrase_paragraphs")
+}
+

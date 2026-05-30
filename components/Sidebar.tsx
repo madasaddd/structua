@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { WeeklyUpdateModal } from '@/components/WeeklyUpdateModal'
+import { DailyProgressWidget } from '@/components/vocab/DailyProgressWidget'
 
 export type SidebarDay = {
   id: number
@@ -306,6 +307,15 @@ export default function Sidebar({
           </div>
         </div>
       </div>
+
+      {/* Full-width Bottom Widget */}
+      {/* 
+      {isVocab && (
+        <div className="border-t border-gray-200 p-4 shrink-0 bg-white flex justify-center">
+          <DailyProgressWidget />
+        </div>
+      )} 
+      */}
     </div>
   )
 
