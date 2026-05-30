@@ -422,9 +422,6 @@ export default function QuizEditorClient({ wordlist, activeTab, onTabChange }: {
            </div>
          </div>
       </div>
-
-      )}
-
       {/* CSV Upload Modal for Single Group */}
       {csvUploadGroupId !== null && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
