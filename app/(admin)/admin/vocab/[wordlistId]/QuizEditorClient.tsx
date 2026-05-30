@@ -28,7 +28,6 @@ export default function QuizEditorClient({ wordlist, activeTab, onTabChange }: {
   const [csvUploadGroupId, setCsvUploadGroupId] = useState<number | null>(null)
   
   const [groups, setGroups] = useState<EditQuizGroup[]>([])
-  const [groups, setGroups] = useState<EditQuizGroup[]>([])
   const vocabularies = wordlist.vocabularies || []
 
   // Load existing data
