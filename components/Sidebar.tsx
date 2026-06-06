@@ -53,6 +53,7 @@ export default function Sidebar({
   const isVocab = pathname.startsWith('/vocab')
   const isVocabListingPage = pathname === '/vocab'
   const isOnWordlistPage = isVocab && !!wordlistId // /vocab/[wordlistId] or /vocab/[wordlistId]/discovery
+  const isWriting = pathname.startsWith('/writing')
 
   // Determine the active category in the sidebar
   // On /vocab: use scroll-spy. On /vocab/[wordlistId]: use the wordlist's category.
@@ -151,12 +152,14 @@ export default function Sidebar({
 
   const grammarHref = weeks[0]?.days[0] ? `/day/${weeks[0].days[0].id}` : '#'
 
+  // Writing icon: active on any /writing route
+  const isWritingIconActive = isWriting
   // Vocab icon: active on any /vocab route
   const isVocabIconActive = isVocab
-  // Grammar icon: active when not in any vocab route
-  const isGrammarIconActive = !isVocab
+  // Grammar icon: active when not in any vocab route and not in writing route
+  const isGrammarIconActive = !isVocab && !isWriting
 
-  const dualPillarContent = (
+  const renderDualPillarContent = () => (
     <div className="flex flex-col h-full w-full bg-white">
       {/* Global Header */}
       <div className="h-[4.5rem] flex items-center px-6 border-b border-gray-200 shrink-0">
@@ -167,7 +170,19 @@ export default function Sidebar({
       <div className="flex flex-1 overflow-hidden">
         {/* Pillar 1 */}
         <div className="w-[72px] shrink-0 border-r border-gray-200 bg-white flex flex-col items-center py-4 gap-2">
-          {/* Vocab icon — first position, uses confirmation if on wordlist page */}
+          {/* Writing icon — first position */}
+          <button
+            onClick={() => handleNavigateAway('/writing/paragraph')}
+            className={`w-14 items-center justify-center p-2 rounded-xl flex flex-col gap-1 transition-colors ${isWritingIconActive ? 'bg-[#EFF3FC] text-[#221B2F]' : 'text-gray-500 hover:bg-gray-50'}`}
+          >
+            <svg className="w-6 h-6 mb-0.5" viewBox="0 0 32 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path fillRule="evenodd" clipRule="evenodd" d="M18.257,6.671l-9.679,9.679c-0.137,0.138 -0.232,0.312 -0.271,0.502l-1.487,7.085c-0.069,0.329 0.032,0.671 0.269,0.909c0.236,0.239 0.577,0.343 0.906,0.277l7.143,-1.428c0.194,-0.039 0.372,-0.134 0.511,-0.274l9.679,-9.679l-7.071,-7.071Zm1.414,-1.414l7.071,7.071l1.793,-1.792c1.953,-1.953 1.953,-5.119 0,-7.072c0,0 0,0 0,0c-0.938,-0.937 -2.209,-1.464 -3.535,-1.464c-1.327,0 -2.598,0.527 -3.536,1.464l-1.793,1.793Z" />
+              <path fillRule="evenodd" clipRule="evenodd" d="M3.5,30l24,0c0.828,0 1.5,-0.672 1.5,-1.5c0,-0.828 -0.672,-1.5 -1.5,-1.5l-24,0c-0.828,0 -1.5,0.672 -1.5,1.5c0,0.828 0.672,1.5 1.5,1.5Z" />
+            </svg>
+            <span className="text-[10px] font-bold">Writing</span>
+          </button>
+
+          {/* Vocab icon — second position, uses confirmation if on wordlist page */}
           <button
             onClick={() => handleNavigateAway('/vocab')}
             className={`w-14 items-center justify-center p-2 rounded-xl flex flex-col gap-1 transition-colors ${isVocabIconActive ? 'bg-[#EFF3FC] text-[#221B2F]' : 'text-gray-500 hover:bg-gray-50'}`}
@@ -215,7 +230,32 @@ export default function Sidebar({
         {/* Pillar 2 */}
         <div className="flex-1 flex flex-col bg-white overflow-hidden">
           <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-gray-200">
-            {isVocab ? (
+            {isWriting ? (
+              <div className="space-y-1 mt-2">
+                <Link
+                  href="/writing/paragraph"
+                  onClick={() => onClose?.()}
+                  className={`block w-full text-left px-3 py-2 text-[13px] rounded-lg transition-colors font-sans ${
+                    pathname.startsWith('/writing/paragraph')
+                      ? 'bg-[#EFF3FC] text-[#221B2F] font-bold'
+                      : 'text-gray-700 hover:bg-blue-50/50 font-medium'
+                  }`}
+                >
+                  A paragraph
+                </Link>
+                <Link
+                  href="/writing/essay"
+                  onClick={() => onClose?.()}
+                  className={`block w-full text-left px-3 py-2 text-[13px] rounded-lg transition-colors font-sans ${
+                    pathname.startsWith('/writing/essay')
+                      ? 'bg-[#EFF3FC] text-[#221B2F] font-bold'
+                      : 'text-gray-700 hover:bg-blue-50/50 font-medium'
+                  }`}
+                >
+                  An Essay
+                </Link>
+              </div>
+            ) : isVocab ? (
               <div className="space-y-1 mt-2">
                 {vocabCategories.map(cat => {
                   const isActive = activeVocabId === cat.id || (!activeVocabId && vocabCategories[0]?.id === cat.id && isVocabListingPage)
@@ -322,13 +362,13 @@ export default function Sidebar({
   return (
     <>
       <aside className="hidden lg:flex lg:w-80 lg:flex-row lg:border-r lg:border-gray-200 lg:bg-white shadow-[1px_0_0_0_rgba(0,0,0,0.02)]">
-        {dualPillarContent}
+        {renderDualPillarContent()}
       </aside>
 
       <div className={`lg:hidden fixed inset-0 z-50 transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={onClose} />
         <aside className={`absolute left-0 top-0 bottom-0 w-80 flex flex-row bg-white shadow-xl transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          {dualPillarContent}
+          {renderDualPillarContent()}
         </aside>
       </div>
 

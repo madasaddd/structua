@@ -7,6 +7,7 @@ export default async function AiConfigPage() {
   const grammarConfig = configs.find(c => c.type === 'grammar')
   const vocabConfig = configs.find(c => c.type === 'vocab-discovery')
   const quizConfig = configs.find(c => c.type === 'vocab-quiz')
+  const writingConfig = configs.find(c => c.type === 'writing-practice')
 
   return (
     <div className="p-8 max-w-4xl font-sans">
@@ -70,6 +71,26 @@ export default async function AiConfigPage() {
             })}
           </div>
         </section>
+
+        {/* Writing Section */}
+        <div className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden shadow-sm">
+          <div className="p-6 border-b border-[#E2E8F0]">
+            <h2 className="text-lg font-bold text-[#475569] mb-4">Writing Practice</h2>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-blue-200 transition-colors">
+                <span className="font-semibold text-[#334155]">
+                  {writingConfig ? writingConfig.name : 'Writing Practice Config'}
+                </span>
+                <Link 
+                  href={`/admin/ai/writing-practice`}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors"
+                >
+                  Edit Config
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -11,7 +11,8 @@ export default function AdminSidebar({ weeks, vocabCategories = [] }: { weeks: S
   const pathname = usePathname()
   const isVocab = pathname.startsWith('/admin/vocab')
   const isAi = pathname.startsWith('/admin/ai')
-  const isGrammar = !isVocab && !isAi
+  const isWriting = pathname.startsWith('/admin/writing')
+  const isGrammar = !isVocab && !isAi && !isWriting
   
   const activeDayId = params.id ? parseInt(params.id as string, 10) : null
 
@@ -53,6 +54,13 @@ export default function AdminSidebar({ weeks, vocabCategories = [] }: { weeks: S
               <path d="M7.47341 17.1351H8.68965H13.1034H19.9991C19.9956 18.2657 19.9776 19.1088 19.8862 19.775C19.7773 20.5683 19.5782 20.9884 19.2728 21.2876C18.9674 21.5868 18.5387 21.7818 17.729 21.8885C16.8955 21.9983 15.7908 22 14.2069 22H9.7931C8.2092 22 7.10452 21.9983 6.27103 21.8885C5.46135 21.7818 5.03258 21.5868 4.72718 21.2876C4.42179 20.9884 4.22268 20.5683 4.11382 19.775C4.07259 19.4746 4.0463 19.1382 4.02952 18.7558C4.30088 18.0044 4.93365 17.4264 5.72738 17.218C6.01657 17.1421 6.39395 17.1351 7.47341 17.1351Z" fill="currentColor"/>
             </svg>
             <span className="text-[10px] font-bold">Grammar</span>
+          </Link>
+          <Link href="/admin/writing" className={`w-14 items-center justify-center p-2 rounded-xl flex flex-col gap-1 transition-colors ${isWriting ? 'bg-[#EFF3FC] text-[#221B2F]' : 'text-gray-500 hover:bg-gray-50'}`}>
+            <svg className="w-6 h-6 mb-0.5" viewBox="0 0 32 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path fillRule="evenodd" clipRule="evenodd" d="M18.257,6.671l-9.679,9.679c-0.137,0.138 -0.232,0.312 -0.271,0.502l-1.487,7.085c-0.069,0.329 0.032,0.671 0.269,0.909c0.236,0.239 0.577,0.343 0.906,0.277l7.143,-1.428c0.194,-0.039 0.372,-0.134 0.511,-0.274l9.679,-9.679l-7.071,-7.071Zm1.414,-1.414l7.071,7.071l1.793,-1.792c1.953,-1.953 1.953,-5.119 0,-7.072c0,0 0,0 0,0c-0.938,-0.937 -2.209,-1.464 -3.535,-1.464c-1.327,0 -2.598,0.527 -3.536,1.464l-1.793,1.793Z" />
+              <path fillRule="evenodd" clipRule="evenodd" d="M3.5,30l24,0c0.828,0 1.5,-0.672 1.5,-1.5c0,-0.828 -0.672,-1.5 -1.5,-1.5l-24,0c-0.828,0 -1.5,0.672 -1.5,1.5c0,0.828 0.672,1.5 1.5,1.5Z" />
+            </svg>
+            <span className="text-[10px] font-bold">Writing</span>
           </Link>
           <Link href="/admin/vocab" className={`w-14 items-center justify-center p-2 rounded-xl flex flex-col gap-1 transition-colors ${isVocab ? 'bg-[#EFF3FC] text-[#221B2F]' : 'text-gray-500 hover:bg-gray-50'}`}>
             <svg className="w-6 h-6 mb-0.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -121,7 +129,19 @@ export default function AdminSidebar({ weeks, vocabCategories = [] }: { weeks: S
         {/* Pillar 2 */}
         <div className="flex-1 flex flex-col bg-white overflow-hidden">
           <nav className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-gray-200">
-            {isVocab ? (
+            {isWriting ? (
+               <div className="space-y-1 mt-2">
+                 {vocabCategories.filter(cat => cat.name !== 'Writing Task 1').map(cat => (
+                   <Link
+                     key={cat.id}
+                     href={`/admin/writing/${cat.id}`}
+                     className={`flex w-full items-center px-3 py-2 text-[13px] rounded-lg transition-colors font-sans ${pathname === `/admin/writing/${cat.id}` ? 'bg-[#EFF3FC] text-[#221B2F] font-bold' : 'text-gray-700 hover:bg-blue-50/50 font-medium'}`}
+                   >
+                     {cat.name}
+                   </Link>
+                 ))}
+               </div>
+            ) : isVocab ? (
                <div className="space-y-1 mt-2">
                  {vocabCategories.map(cat => (
                    <Link

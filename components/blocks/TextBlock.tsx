@@ -12,12 +12,12 @@ export default function TextBlock({ data }: { data: TextBlockContent }) {
     case 'h3':
       return <h3 className="text-xl md:text-2xl font-bold text-gray-800 mt-10 mb-4" dangerouslySetInnerHTML={{ __html: safeContent }} />
     case 'body-lg':
-      return <p className="text-lg md:text-xl leading-relaxed text-gray-700 mb-8 font-light" dangerouslySetInnerHTML={{ __html: safeContent }} />
+      return <div className="text-lg md:text-xl leading-relaxed text-gray-700 mb-8 font-light" dangerouslySetInnerHTML={{ __html: safeContent }} />
     case 'body-md':
-      return <p className="text-base md:text-lg leading-relaxed text-gray-700 mb-6" dangerouslySetInnerHTML={{ __html: safeContent }} />
+      return <div className="text-base md:text-lg leading-relaxed text-gray-700 mb-6" dangerouslySetInnerHTML={{ __html: safeContent }} />
     case 'body-sm':
-      return <p className="text-sm leading-relaxed text-gray-500 mb-6 italic" dangerouslySetInnerHTML={{ __html: safeContent }} />
+      return <div className="text-sm leading-relaxed text-gray-500 mb-6 italic" dangerouslySetInnerHTML={{ __html: safeContent }} />
     default:
-      return <p className="text-base leading-relaxed text-gray-700 mb-6" dangerouslySetInnerHTML={{ __html: safeContent }} />
+      return <div className="text-base leading-relaxed text-gray-700 mb-6" dangerouslySetInnerHTML={{ __html: safeContent }} />
   }
 }

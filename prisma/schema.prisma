@@ -113,6 +113,7 @@ model VocabCategory {
   orderIndex  Int        @map("order_index")
   labelColor  String?    @map("label_color")
   wordlists   Wordlist[]
+  writingPromptGroups WritingPromptGroup[]
 
   @@map("vocab_categories")
 }
@@ -298,3 +299,26 @@ model ParaphraseParagraph {
   @@map("paraphrase_paragraphs")
 }
 
+enum EssayType {
+  advantage_disadvantage
+  problem_solution
+  double_question
+  opinion
+  discuss_both_views
+}
+
+model WritingPromptGroup {
+  id               String   @id @default(uuid())
+  categoryId       String   @map("category_id")
+  essayType        EssayType @map("essay_type")
+  orderIndex       Int      @map("order_index")
+  question         String   @db.Text
+  
+  introductionJson Json     @map("introduction_json")
+  body1Json        Json     @map("body1_json")
+  body2Json        Json     @map("body2_json")
+  
+  category         VocabCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("writing_prompt_groups")
+}
