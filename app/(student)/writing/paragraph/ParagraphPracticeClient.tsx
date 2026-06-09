@@ -3,6 +3,43 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 
+const getLabelColors = (label: string | undefined) => {
+  switch (label) {
+    case 'Advantage & Disadvantage':
+    case 'Advantages & Disadvantages':
+      return {
+        essayBg: '#0770E3', essayText: '#FFFFFF',
+        paraBg: '#CEE4FD', paraText: '#0770E3'
+      }
+    case 'Problem & Solution':
+    case 'Problems & Solutions':
+      return {
+        essayBg: '#D1435B', essayText: '#FFFFFF',
+        paraBg: '#F5D6DB', paraText: '#D1435B'
+      }
+    case 'Double Question':
+      return {
+        essayBg: '#5B479C', essayText: '#FFFFFF',
+        paraBg: '#E0DCEF', paraText: '#5B479C'
+      }
+    case 'Opinion':
+      return {
+        essayBg: '#F8794E', essayText: '#FFFFFF',
+        paraBg: '#FEE1D8', paraText: '#F8794E'
+      }
+    case 'Discuss Both Views':
+      return {
+        essayBg: '#00A698', essayText: '#FFFFFF',
+        paraBg: '#CCFFFB', paraText: '#00A698'
+      }
+    default:
+      return {
+        essayBg: '#2563eb', essayText: '#FFFFFF',
+        paraBg: '#dbeafe', paraText: '#1d4ed8'
+      }
+  }
+}
+
 export default function ParagraphPracticeClient({
   categories,
   prompts,
@@ -318,20 +355,29 @@ export default function ParagraphPracticeClient({
                 <div className="h-6 w-[180px] bg-gray-200 rounded-full animate-pulse"></div>
               </>
             ) : (
-              <>
-                <span className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full">
-                  {essayTypes[currentPrompt.essayType]?.label}
-                </span>
-                <a 
-                  href="https://drive.google.com/file/d/1riuqD89cVtfogHUBln69B_4_X6bZd0_p/view?usp=sharing"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full flex items-center gap-1 hover:bg-blue-200 transition-colors"
-                >
-                  {paragraphLabels[currentParagraphType]}
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                </a>
-              </>
+              (() => {
+                const colors = getLabelColors(essayTypes[currentPrompt.essayType]?.label);
+                return (
+                  <>
+                    <span 
+                      className="px-3 py-1 text-xs font-bold rounded-full"
+                      style={{ backgroundColor: colors.essayBg, color: colors.essayText }}
+                    >
+                      {essayTypes[currentPrompt.essayType]?.label}
+                    </span>
+                    <a 
+                      href="https://drive.google.com/file/d/1riuqD89cVtfogHUBln69B_4_X6bZd0_p/view?usp=sharing"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1 text-xs font-bold rounded-full flex items-center gap-1 transition-colors hover:opacity-80"
+                      style={{ backgroundColor: colors.paraBg, color: colors.paraText }}
+                    >
+                      {paragraphLabels[currentParagraphType]}
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                    </a>
+                  </>
+                )
+              })()
             )}
           </div>
           <button 
@@ -675,6 +721,12 @@ export default function ParagraphPracticeClient({
                       {paragraphLabels[key]}
                     </button>
                   ))}
+                  <button
+                    disabled
+                    className="px-4 py-1.5 rounded-full text-sm font-medium border transition-colors bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
+                  >
+                    Concluding Paragraph
+                  </button>
                 </div>
               </div>
             </div>
